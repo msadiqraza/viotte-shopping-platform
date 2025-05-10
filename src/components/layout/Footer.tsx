@@ -1,96 +1,71 @@
-// -----------------------------------------------------------------------------
-// 10. components/layout/Footer.tsx
-// Description: Footer component based on wireframe.
-// -----------------------------------------------------------------------------
-// Create this file in `src/components/layout/Footer.tsx`
+// --- src/components/layout/Footer.tsx ---
+import React from "react"; // Already imported
+import { NewsletterSignup } from "../landing/NewsletterSignup"; // This path will need adjustment if NewsletterSignup moves
 
-import React from "react";
-import { NewsletterSignup } from "../landing/NewsletterSignup"; // Already imported
+interface FooterProps {
+  onNavigate?: (page: string, params?: any) => void;
+}
 
-export const Footer: React.FC = () => {
+export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
   const currentYear = new Date().getFullYear();
+  const handleFooterLink = (e: React.MouseEvent, page: string) => {
+    e.preventDefault();
+    onNavigate?.(page);
+  };
+
   return (
     <footer className="bg-green-800 text-green-200 pt-12 pb-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-10">
-          {/* Column 1: Newsletter (as per wireframe, this section is prominent) */}
-          <div className="md:col-span-2 lg:col-span-2 flex flex-col space-y-4">
-            <NewsletterSignup />
-            <label className="text-sm font-semibold text-white mb-2">
+          <div className="md:col-span-2 lg:col-span-2 flex flex-col gap-2">
+            <NewsletterSignup /> {/* This component is defined in the Landing Page Components canvas */}
+            <h5 className="text-md font-semibold text-white mb-2">
               Contact Us:{" "}
-              <a
-                href="/contact"
-                className="hover:text-orange-400 transition-colors font-normal"
-              >
+              <a href="mailto:contact@yourstore.site" className="hover:text-orange-400 font-normal transition-colors">
                 contact@yourstore.site
               </a>
-            </label>
+            </h5>
           </div>
-
-          {/* Column 2: Links (About, Blog, etc.) */}
           <div>
             <h5 className="text-lg font-semibold text-white mb-4">Company</h5>
             <ul className="space-y-2 text-sm">
               <li>
-                <a
-                  href="/about"
-                  className="hover:text-orange-400 transition-colors"
-                >
+                <a href="/about" onClick={(e) => handleFooterLink(e, "about")} className="hover:text-orange-400 transition-colors">
                   About Us
                 </a>
               </li>
               <li>
-                <a
-                  href="/blog"
-                  className="hover:text-orange-400 transition-colors"
-                >
+                <a href="/blog" onClick={(e) => handleFooterLink(e, "blog")} className="hover:text-orange-400 transition-colors">
                   Blog
                 </a>
               </li>
               <li>
-                <a
-                  href="/join-seller"
-                  className="hover:text-orange-400 transition-colors"
-                >
-                  Join as Seller
+                <a href="/store" onClick={(e) => handleFooterLink(e, "store")} className="hover:text-orange-400 transition-colors">
+                  Our Store
                 </a>
               </li>
               <li>
-                <a
-                  href="/career"
-                  className="hover:text-orange-400 transition-colors"
-                >
+                <a href="/career" onClick={(e) => handleFooterLink(e, "career")} className="hover:text-orange-400 transition-colors">
                   Career
                 </a>
               </li>
             </ul>
           </div>
-
-          {/* Column 3: Links (Policies, Terms, etc.) */}
           <div>
             <h5 className="text-lg font-semibold text-white mb-4">Support</h5>
             <ul className="space-y-2 text-sm">
               <li>
-                <a
-                  href="/policies"
-                  className="hover:text-orange-400 transition-colors"
-                >
+                <a href="/policies" onClick={(e) => handleFooterLink(e, "policies")} className="hover:text-orange-400 transition-colors">
                   Policies
                 </a>
               </li>
               <li>
-                <a
-                  href="/terms"
-                  className="hover:text-orange-400 transition-colors"
-                >
+                <a href="/terms" onClick={(e) => handleFooterLink(e, "terms")} className="hover:text-orange-400 transition-colors">
                   Terms of Service
                 </a>
               </li>
               <li>
-                <a
-                  href="/privacy"
-                  className="hover:text-orange-400 transition-colors"
-                >
+                <a href="/privacy" onClick={(e) => handleFooterLink(e, "privacy")} className="hover:text-orange-400 transition-colors">
                   Privacy
                 </a>
               </li>

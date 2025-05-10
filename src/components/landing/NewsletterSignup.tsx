@@ -1,19 +1,13 @@
-// -----------------------------------------------------------------------------
-// 9. components/landing/NewsletterSignup.tsx
-// Description: Newsletter signup form for the footer area.
-// -----------------------------------------------------------------------------
-// Create this file in `src/components/landing/NewsletterSignup.tsx`
-
-import React, { useState } from "react";
+// --- src/components/landing/NewsletterSignup.tsx ---
+import React, { useState } from "react"; // Already imported
 import { Mail } from "lucide-react";
-import { subscribeToNewsletter } from "../../services/api"; // Adjust path
+import { subscribeToNewsletter } from "../../services/utilityApis"; // Adjust path
 
 export const NewsletterSignup: React.FC = () => {
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setMessage("");
@@ -34,20 +28,19 @@ export const NewsletterSignup: React.FC = () => {
       setIsLoading(false);
     }
   };
-
   return (
     <div>
       <h5 className="text-lg font-semibold text-white mb-3">Subscribe for our Newsletters</h5>
       <p className="text-sm text-green-200 mb-3">Get updates on new arrivals, special offers, and more.</p>
       <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-2">
-        <div className="relative flex-grow max-w-[350px]">
-          <Mail size={18} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-green-100 pointer-events-none" />
+        <div className="relative">
+          <Mail size={18} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-green-400 pointer-events-none" />
           <input
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="Enter your email"
-            className="w-full border border-white placeholder-white text-white rounded-md py-2.5 px-3 pl-10 text-sm focus:outline-none focus:ring-2 focus:ring-white focus:border-white"
+            className="w-[300px] bg-green-600 border border-green-500 placeholder-green-300 text-white rounded-md py-2.5 px-3 pl-10 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-orange-400"
             required
             disabled={isLoading}
           />
