@@ -1,93 +1,166 @@
-import { Cart, Order } from "../types";
+import { Cart } from "../types";
+import { supabase } from "../supabaseClient";
+import { getCurrentUserId } from "./index";
+import { CartItem } from "../types";
+import { Product } from "../types";
 
-// --- CART & CHECKOUT API MOCKS ---
-let mockCart: Cart = { 
-    id: 'cart-session-123',
-    items: [],
-    subtotal: 0, 
-    total: 0,    
-    lastUpdated: new Date().toISOString(),
-};
-const calculateCartTotals = (cart: Cart): Cart => {
-    const subtotal = cart.items.reduce((sum, item) => sum + item.price * item.quantity, 0);
-    const discountAmount = cart.discount?.amount || 0;
-    const shipping = cart.shippingCost || 0; 
-    const taxes = cart.taxes || 0; 
-    const total = subtotal - discountAmount + shipping + taxes;
-    return { ...cart, subtotal, total, lastUpdated: new Date().toISOString() };
-};
-mockCart = calculateCartTotals(mockCart);
+const getOrCreateUserCartId = async (userId: string): Promise<string> => {
+    let { data: cart, error: fetchError } = await supabase
+        .from('user_carts')
+        .select('id')
+        .eq('user_id', userId)
+        .single();
 
-export const getCart = (): Promise<Cart> => {
-    console.warn("Fetching MOCKED Cart");
-    return new Promise(resolve => setTimeout(() => {
-        resolve(calculateCartTotals(mockCart));
-    }, 300));
+    if (fetchError && fetchError.code !== 'PGRST116') { // PGRST116: no rows found
+        throw fetchError;
+    }
+    if (!cart) {
+        const { data: newCart, error: insertError } = await supabase
+            .from('user_carts')
+            .insert({ user_id: userId })
+            .select('id')
+            .single();
+        if (insertError) throw insertError;
+        if (!newCart) throw new Error("Failed to create cart.");
+        cart = newCart;
+    }
+    return cart.id;
 };
-export const addItemToCart = (item: { productId: string; quantity: number; price: number; name: string; imageUrl: string; size?: string; color?: string }): Promise<Cart> => {
-    console.warn("MOCK Adding item to cart:", item);
-    return new Promise(resolve => setTimeout(() => {
-        const existingItemIndex = mockCart.items.findIndex(i => i.productId === item.productId && i.size === item.size && i.color === item.color);
-        if (existingItemIndex > -1) mockCart.items[existingItemIndex].quantity += item.quantity;
-        else mockCart.items.push({ ...item });
-        mockCart = calculateCartTotals(mockCart);
-        resolve(mockCart);
-    }, 500));
+
+const fetchAndCalculateCart = async (cartId: string): Promise<Cart> => {
+    const { data: cartItemsData, error: itemsError } = await supabase
+        .from('user_cart_items')
+        .select(`
+            *,
+            products (id, name, price, imageUrl, stock)
+        `)
+        .eq('cart_id', cartId);
+
+    if (itemsError) throw itemsError;
+
+    const items: CartItem[] = cartItemsData?.map(ci => ({
+        productId: (ci.products as Product).id,
+        name: (ci.products as Product).name,
+        price: ci.price_at_add, // Use price_at_add for consistency
+        quantity: ci.quantity,
+        imageUrl: (ci.products as Product).imageUrl,
+        size: ci.size,
+        color: ci.color,
+    })) || [];
+    
+    // Recalculate totals (discount, shipping, taxes would be applied later or fetched from cart table if stored there)
+    const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+    // For a full implementation, fetch discount, shipping, taxes from user_carts table or calculate them
+    const total = subtotal; // Simplified for now
+
+    return {
+        id: cartId,
+        items,
+        subtotal,
+        total,
+        lastUpdated: new Date().toISOString(), // Could be from user_carts.updated_at
+    };
 };
-export const updateCartItemQuantity = (productId: string, quantity: number, size?: string, color?: string): Promise<Cart> => {
-    console.warn(`MOCK Updating cart item ${productId} quantity to ${quantity}`);
-    return new Promise(resolve => setTimeout(() => {
-        const itemIndex = mockCart.items.findIndex(i => i.productId === productId && i.size === size && i.color === color);
-        if (itemIndex > -1) {
-            if (quantity <= 0) mockCart.items.splice(itemIndex, 1);
-            else mockCart.items[itemIndex].quantity = quantity;
-            mockCart = calculateCartTotals(mockCart);
-        }
-        resolve(mockCart);
-    }, 400));
+
+
+export const getSupabaseCart = async (): Promise<Cart> => {
+    const userId = await getCurrentUserId();
+    const cartId = await getOrCreateUserCartId(userId);
+    return fetchAndCalculateCart(cartId);
 };
-export const removeCartItem = (productId: string, size?: string, color?: string): Promise<Cart> => {
-    console.warn(`MOCK Removing cart item ${productId}`);
-    return new Promise(resolve => setTimeout(() => {
-        mockCart.items = mockCart.items.filter(i => !(i.productId === productId && i.size === size && i.color === color));
-        mockCart = calculateCartTotals(mockCart);
-        resolve(mockCart);
-    }, 400));
+
+export const addSupabaseItemToCart = async (item: { productId: string; quantity: number; price: number; name?: string; imageUrl?: string; size?: string; color?: string }): Promise<Cart> => {
+    const userId = await getCurrentUserId();
+    const cartId = await getOrCreateUserCartId(userId);
+
+    // Check if item variant already exists
+    let query = supabase.from('user_cart_items')
+        .select('*')
+        .eq('cart_id', cartId)
+        .eq('product_id', item.productId);
+    if (item.size) query = query.eq('size', item.size); else query = query.is('size', null);
+    if (item.color) query = query.eq('color', item.color); else query = query.is('color', null);
+    
+    const { data: existingItem, error: fetchExistingError } = await query.single();
+
+    if (fetchExistingError && fetchExistingError.code !== 'PGRST116') throw fetchExistingError;
+
+    if (existingItem) { // Update quantity
+        const { error: updateError } = await supabase
+            .from('user_cart_items')
+            .update({ quantity: existingItem.quantity + item.quantity })
+            .eq('id', existingItem.id);
+        if (updateError) throw updateError;
+    } else { // Insert new item
+        const { error: insertError } = await supabase
+            .from('user_cart_items')
+            .insert({
+                cart_id: cartId,
+                product_id: item.productId,
+                quantity: item.quantity,
+                price_at_add: item.price, // Price when added
+                size: item.size,
+                color: item.color,
+            });
+        if (insertError) throw insertError;
+    }
+    await supabase.from('user_carts').update({ updated_at: new Date().toISOString() }).eq('id', cartId);
+    return fetchAndCalculateCart(cartId);
 };
-export const applyDiscountCode = (code: string): Promise<Cart> => {
-    console.warn(`MOCK Applying discount code ${code}`);
-    return new Promise((resolve, reject) => setTimeout(() => {
-        if (code.toUpperCase() === 'SALE10') {
-            mockCart.discount = { code, amount: mockCart.subtotal * 0.10 };
-            mockCart = calculateCartTotals(mockCart);
-            resolve(mockCart);
-        } else {
-            mockCart.discount = undefined; 
-            mockCart = calculateCartTotals(mockCart);
-            reject(new Error("Invalid discount code."));
-        }
-    }, 600));
+
+export const updateSupabaseCartItemQuantity = async (productId: string, quantity: number, size?: string, color?: string): Promise<Cart> => {
+  const userId = await getCurrentUserId();
+  const cartId = await getOrCreateUserCartId(userId);
+
+  // Define the match criteria for finding the specific cart item
+  const matchCriteria: { cart_id: string; product_id: string; size?: string | null; color?: string | null } = {
+    cart_id: cartId,
+    product_id: productId,
+  };
+  if (size !== undefined) matchCriteria.size = size;
+  else matchCriteria.size = null;
+  if (color !== undefined) matchCriteria.color = color;
+  else matchCriteria.color = null;
+
+  if (quantity <= 0) {
+    // Delete the item if quantity is 0 or less
+    const { error } = await supabase.from("user_cart_items").delete().match(matchCriteria);
+    if (error) {
+      console.error("Error deleting cart item:", error);
+      throw error;
+    }
+  } else {
+    // Update the quantity for the item
+    const { error } = await supabase.from("user_cart_items").update({ quantity: quantity }).match(matchCriteria);
+    if (error) {
+      console.error("Error updating cart item quantity:", error);
+      throw error;
+    }
+  }
+
+  // Update the cart's last updated timestamp
+  await supabase.from("user_carts").update({ updated_at: new Date().toISOString() }).eq("id", cartId);
+
+  // Fetch and return the updated cart
+  return fetchAndCalculateCart(cartId);
 };
-export const updateShippingOption = (shippingOption: { name: string; cost: number }): Promise<Cart> => {
-    console.warn("MOCK Updating shipping option:", shippingOption);
-    return new Promise(resolve => setTimeout(() => {
-        mockCart.shippingCost = shippingOption.cost;
-        mockCart = calculateCartTotals(mockCart);
-        resolve(mockCart);
-    }, 300));
+export const removeSupabaseCartItem = async (productId: string, size?: string, color?: string): Promise<Cart> => {
+    const userId = await getCurrentUserId();
+    const cartId = await getOrCreateUserCartId(userId);
+    
+    let query = supabase.from('user_cart_items')
+        .delete()
+        .eq('cart_id', cartId)
+        .eq('product_id', productId);
+    if (size) query = query.eq('size', size); else query = query.is('size', null);
+    if (color) query = query.eq('color', color); else query = query.is('color', null);
+
+    const { error } = await query;
+    if (error) throw error;
+    
+    await supabase.from('user_carts').update({ updated_at: new Date().toISOString() }).eq('id', cartId);
+    return fetchAndCalculateCart(cartId);
 };
-export const placeOrder = (orderDetails: Omit<Order, 'id' | 'orderNumber' | 'datePlaced' | 'status'>): Promise<{ success: boolean; order: Order }> => {
-    console.warn("MOCK Placing Order:", orderDetails);
-    return new Promise(resolve => setTimeout(() => {
-        const newOrder: Order = {
-            ...orderDetails,
-            id: `order${Date.now()}`,
-            orderNumber: `YS${Date.now().toString().slice(-6)}`,
-            datePlaced: new Date().toISOString(),
-            status: 'Processing', 
-            paymentDetails: { ...orderDetails.paymentDetails, paymentStatus: 'Paid' } 
-        };
-        mockCart = { id: 'cart-session-123', items: [], subtotal: 0, total: 0, lastUpdated: new Date().toISOString() };
-        resolve({ success: true, order: newOrder });
-    }, 1000));
-};
+
+// applyDiscountCode and updateShippingOption would involve updating fields on the `user_carts` table.
+// placeOrder would read from user_carts and user_cart_items, create records in `orders` and `order_items`, then clear the cart.

@@ -1,10 +1,10 @@
 // src/pages/CartPage.tsx
 import React, { useState, useEffect, useCallback } from "react";
 import { Cart } from "../types";
-import { getCart } from "../services/cartCheckoutApis";
-import { updateCartItemQuantity } from "../services/cartCheckoutApis";
-import { removeCartItem } from "../services/cartCheckoutApis";
-import { applyDiscountCode } from "../services/cartCheckoutApis";
+import { getSupabaseCart } from "../services/cartCheckoutApis";
+import { updateSupabaseCartItemQuantity } from "../services/cartCheckoutApis";
+import { removeSupabaseCartItem } from "../services/cartCheckoutApis";
+// import { applyDiscountCode } from "../services/cartCheckoutApis";
 import { CartItemCard } from "../components/cart/CartItemCard";
 import { ShoppingBag, ChevronRight } from "lucide-react";
 
@@ -25,7 +25,7 @@ export const CartPage: React.FC<CartPageProps> = ({ onNavigate }) => {
     setIsLoading(true);
     setError(null);
     try {
-      const cartData = await getCart();
+      const cartData = await getSupabaseCart();
       setCart(cartData);
     } catch (err: any) {
       setError(err.message || "Failed to load cart.");
@@ -42,7 +42,7 @@ export const CartPage: React.FC<CartPageProps> = ({ onNavigate }) => {
     const itemId = `${productId}_${size || "any"}_${color || "any"}`;
     setUpdatingItemId(itemId);
     try {
-      const updatedCart = await updateCartItemQuantity(productId, quantity, size, color);
+      const updatedCart = await updateSupabaseCartItemQuantity(productId, quantity, size, color);
       setCart(updatedCart);
     } catch (err) {
       console.error("Failed to update quantity", err);
@@ -54,7 +54,7 @@ export const CartPage: React.FC<CartPageProps> = ({ onNavigate }) => {
     const itemId = `${productId}_${size || "any"}_${color || "any"}`;
     setUpdatingItemId(itemId);
     try {
-      const updatedCart = await removeCartItem(productId, size, color);
+      const updatedCart = await removeSupabaseCartItem(productId, size, color);
       setCart(updatedCart);
     } catch (err) {
       console.error("Failed to remove item", err);
@@ -68,8 +68,8 @@ export const CartPage: React.FC<CartPageProps> = ({ onNavigate }) => {
     setIsApplyingDiscount(true);
     setDiscountError("");
     try {
-      const updatedCart = await applyDiscountCode(discountCode);
-      setCart(updatedCart);
+      // const updatedCart = await applyDiscountCode(discountCode);
+      // setCart(updatedCart);
       setDiscountCode("");
     } catch (err: any) {
       setDiscountError(err.message || "Failed to apply discount.");

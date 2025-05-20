@@ -98,7 +98,7 @@ export const ProductCarousel: React.FC<ProductCarouselProps> = ({ title, product
       <div className="overflow-hidden relative px-1 md:px-0">
         <div ref={carouselRef} className="flex transition-transform duration-500 ease-in-out" style={{ width: `${(totalItems / currentItemsToShow) * 100}%` }}>
           {products.map((product) => (
-            <div key={product.id} className="px-1.5 sm:px-2 flex-shrink-0" style={{ width: `${itemWidthPercentage}%` }}>
+            <div key={product.id} className="px-1.5 sm:px-2 flex-shrink-0 min-w-[300px]" style={{ width: `${itemWidthPercentage}%` }}>
               <ProductCard product={product} onNavigate={onNavigate} />
             </div>
           ))}

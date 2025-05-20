@@ -1,9 +1,12 @@
 // --- src/components/shop/ShopPoliciesSection.tsx ---
 import React from "react"; // Already imported
-import { Shop } from "../../types"; // Adjust path
 
 interface ShopPoliciesSectionProps {
-  policies: Shop["policies"];
+  policies: {
+    shipping: string;
+    returns: string;
+    payment: string;
+  };
 }
 export const ShopPoliciesSection: React.FC<ShopPoliciesSectionProps> = ({ policies }) => {
   return (

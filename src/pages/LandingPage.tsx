@@ -1,14 +1,14 @@
 // src/pages/LandingPage.tsx
 import React, { useState, useEffect } from "react";
-import { Product, BlogPost, CarouselItem as HeroItemType, CollectionSectionProps as LandingPageProps } from "../types";
+import { Product, CarouselItem as HeroItemType, CollectionSectionProps as LandingPageProps } from "../types";
 import { getCarouselItems } from "../services/utilityApis";
 import { getFeaturedProductsList } from "../services/productApis";
 import { getNewArrivalProductsList } from "../services/productApis";
 import { getShopPreviewProductsList } from "../services/productApis";
-import { getLatestBlogPosts } from "../services/blogPostApis";
+// import { getLatestBlogPosts } from "../services/blogPostApis";
 import { HeroCarousel } from "../components/landing/HeroCarousel";
 import { ProductCarousel } from "../components/shared/ProductCarousel";
-import { BlogPreview } from "../components/landing/BlogPreview";
+// import { BlogPreview } from "../components/landing/Blo`gPreview";
 import { RecentlyViewedSection } from "../components/landing/RecentlyViewedSection";
 
 
@@ -17,7 +17,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
   const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]);
   const [newArrivals, setNewArrivals] = useState<Product[]>([]);
   const [shopLoopProducts, setShopLoopProducts] = useState<Product[]>([]);
-  const [latestPosts, setLatestPosts] = useState<BlogPost[]>([]);
+  // const [latestPosts, setLatestPosts] = useState<BlogPost[]>([]);
   const [loadingStates, setLoadingStates] = useState({ hero: true, featured: true, newArrivals: true, shopLoop: true, blog: true });
 
   useEffect(() => {
@@ -44,19 +44,19 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
         setLoadingStates((prev) => ({ ...prev, newArrivals: false }));
       }
       try {
-        setShopLoopProducts(await getShopPreviewProductsList());
+        setShopLoopProducts(await getShopPreviewProductsList("a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11"));
       } catch (e) {
         console.error("Shop Loop fetch failed", e);
       } finally {
         setLoadingStates((prev) => ({ ...prev, shopLoop: false }));
       }
-      try {
-        setLatestPosts(await getLatestBlogPosts());
-      } catch (e) {
-        console.error("Blog fetch failed", e);
-      } finally {
-        setLoadingStates((prev) => ({ ...prev, blog: false }));
-      }
+      // try {
+      //   setLatestPosts(await getLatestBlogPosts());
+      // } catch (e) {
+      //   console.error("Blog fetch failed", e);
+      // } finally {
+      //   setLoadingStates((prev) => ({ ...prev, blog: false }));
+      // }
     };
     fetchAllData();
   }, []);
@@ -101,7 +101,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
         ) : (
           <ProductCarousel title="Shop Our Collection" products={shopLoopProducts} onNavigate={onNavigate} />
         )}
-        {loadingStates.blog ? <div className="h-96 bg-slate-200 rounded-lg animate-pulse"></div> : <BlogPreview posts={latestPosts} onNavigate={onNavigate} />}
+        {/* {loadingStates.blog ? <div className="h-96 bg-slate-200 rounded-lg animate-pulse"></div> : <BlogPreview posts={latestPosts} onNavigate={onNavigate} />} */}
         <RecentlyViewedSection onNavigate={onNavigate} />
       </main>
     </div>

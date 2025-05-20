@@ -13,7 +13,8 @@ export interface Product {
   reviewCount?: number; // Number of reviews
   stock: number;
   brand?: string;
-  seller?: { // Will refer to the main shop
+  seller?: {
+    // Will refer to the main shop
     id: string; // Main shop's ID (e.g., "main-store-id")
     name: string; // Main shop's name (e.g., "YourStore")
   };
@@ -23,14 +24,16 @@ export interface Product {
   isNewArrival?: boolean;
   dateAdded?: string; // ISO date string
   tags?: string[];
-  policies?: { // Product-specific policies, or could be inherited from shop
+  policies?: {
+    // Product-specific policies, or could be inherited from shop
     shipping?: string;
     returns?: string;
     payment?: string;
   };
 }
 
-export interface Shop { // Represents the single main store
+export interface Shop {
+  // Represents the single main store
   id: string; // e.g., "main-store-id"
   name: string; // e.g., "YourStore"
   slug: string; // e.g., "main-store" (for the URL, if desired)
@@ -40,11 +43,9 @@ export interface Shop { // Represents the single main store
   reviewCount: number; // Overall store review count (if applicable)
   followersCount?: number; // If a "Follow Us" feature is kept
   description: string; // For the "About Us" tab of the store
-  policies: {
-    shipping: string;
-    returns: string;
-    payment: string;
-  };
+  policies_shipping: string;
+  policies_returns: string;
+  policies_payment: string;
   dateJoined: string; // ISO date string (when the platform was "founded")
   location?: string;
   contactInfo?: {
@@ -109,78 +110,78 @@ export interface UserAccountDetails {
   lastName: string;
   email: string;
   phoneNumber?: string;
-  gender?: 'Male' | 'Female' | 'Other' | 'Prefer not to say';
+  gender?: "Male" | "Female" | "Other" | "Prefer not to say";
   avatarUrl?: string;
 }
 
-export type CollectionItem = Product; 
+export type CollectionItem = Product;
 
 // --- CART & ORDER TYPES ---
 export interface CartItem {
-  productId: string; 
+  productId: string;
   name: string;
-  price: number; 
+  price: number;
   quantity: number;
   imageUrl: string;
-  size?: string; 
-  color?: string; 
+  size?: string;
+  color?: string;
 }
 
 export interface Cart {
-  id: string; 
+  id: string;
   items: CartItem[];
   subtotal: number;
   discount?: {
     code?: string;
     amount: number;
   };
-  shippingCost?: number; 
-  taxes?: number; 
-  total: number; 
-  lastUpdated: string; 
+  shippingCost?: number;
+  taxes?: number;
+  total: number;
+  lastUpdated: string;
 }
 
-export interface OrderItem extends Product { 
+export interface OrderItem extends Product {
   quantity: number;
-  priceAtPurchase: number; 
+  priceAtPurchase: number;
   selectedSize?: string;
   selectedColor?: string;
 }
 
 export interface Order {
-  id: string; 
-  orderNumber: string; 
-  userId?: string; 
-  datePlaced: string; 
-  status: 'Pending' | 'Processing' | 'Shipped' | 'Delivered' | 'Cancelled' | 'Returned' | 'PaymentFailed';
+  id: string;
+  orderNumber: string;
+  userId?: string;
+  datePlaced: string;
+  status: "Pending" | "Processing" | "Shipped" | "Delivered" | "Cancelled" | "Returned" | "PaymentFailed";
   items: OrderItem[];
   subtotal: number;
   discountAmount?: number;
   shippingCost: number;
   taxes: number;
-  totalAmount: number; 
-  shippingAddress: Address; 
-  billingAddress?: Address; 
-  paymentMethod: string; 
-  paymentDetails?: { 
+  totalAmount: number;
+  shippingAddress: Address;
+  billingAddress?: Address;
+  paymentMethod: string;
+  paymentDetails?: {
     transactionId?: string;
     cardLast4?: string;
-    paymentStatus: 'Paid' | 'Pending' | 'Failed';
+    paymentStatus: "Paid" | "Pending" | "Failed";
   };
   trackingNumber?: string;
   trackingUrl?: string;
-  customerNotes?: string; 
+  customerNotes?: string;
 }
 
 export interface Address {
-  id?: string; 
-  type?: 'Shipping' | 'Billing'; 
+  id?: string;
+  type?: "Shipping" | "Billing";
   isDefault?: boolean;
   fullName: string;
   streetAddress1: string;
   streetAddress2?: string;
   city: string;
-  state: string; 
+  state: string;
   zipCode: string;
   country: string;
   phoneNumber?: string;
@@ -188,26 +189,26 @@ export interface Address {
 
 export interface PaymentMethod {
   id: string;
-  type: 'CreditCard' | 'PayPal' | 'Other'; 
+  type: "CreditCard" | "PayPal" | "Other";
   isDefault?: boolean;
-  last4?: string; 
-  expiryMonth?: string; 
-  expiryYear?: string; 
-  cardBrand?: 'Visa' | 'Mastercard' | 'Amex' | 'Discover' | 'Other'; 
-  email?: string; 
+  last4?: string;
+  expiryMonth?: string;
+  expiryYear?: string;
+  cardBrand?: "Visa" | "Mastercard" | "Amex" | "Discover" | "Other";
+  email?: string;
   nameOnCard?: string;
 }
 
 export interface GetProductsParams {
-  category?: string; 
+  category?: string;
   shopId?: string;
   search?: string;
-  sort?: string; 
+  sort?: string;
   page?: number;
   limit?: number;
   isFeatured?: boolean;
   isNewArrival?: boolean;
-  ids?: string | string[]; 
+  ids?: string | undefined; // Change to string | undefined from string | string[]
 }
 
 export interface CartItemCardProps {

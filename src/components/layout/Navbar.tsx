@@ -1,117 +1,69 @@
 // src/components/layout/Navbar.tsx
 import React, { useState, useEffect } from "react";
-import { Search, ShoppingCart, User, Heart, Menu, X, ChevronDown } from "lucide-react";
-// import { getCategories } from "../../services/utilityApis";
+import { Search, ShoppingCart, User, Menu, X, ChevronDown } from "lucide-react";
+import { getCategories } from "../../services/utilityApis";
 import { Category, CollectionSectionProps as NavbarProps } from "../../types";
+import { useRef } from "react";
 
 export const Navbar: React.FC<NavbarProps> = ({ onNavigate }) => {
+
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [categories, setCategories] = useState<Category[]>([]);
+  const [isCategoriesDropdownOpen, setIsCategoriesDropdownOpen] = useState(false);
+  const categoriesDropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    getCategories()
+      .then(setCategories)
+      .catch((err) => console.error("Failed to load categories for Navbar", err));
+  }, []);
+
+  // Close dropdown if clicked outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (categoriesDropdownRef.current && !categoriesDropdownRef.current.contains(event.target as Node)) {
+        setIsCategoriesDropdownOpen(false);
+      }
+    };
+    if (isCategoriesDropdownOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    } else {
+      document.removeEventListener("mousedown", handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isCategoriesDropdownOpen]);
 
   const handleNav = (page: string, params?: any) => {
     setIsMobileMenuOpen(false);
+    setIsCategoriesDropdownOpen(false); // Close dropdown on navigation
     onNavigate?.(page, params);
+  };
+
+  const toggleCategoriesDropdown = (e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent click from immediately closing due to handleClickOutside
+    setIsCategoriesDropdownOpen((prev) => !prev);
   };
 
   const mainNavLinks = [
     { name: "Categories", page: "categories", dropdown: true },
     { name: "Shop", page: "shop" },
-    { name: "Avout us", page: "account" }, // point it to collection
-    { name: "Blog", page: "blog" }, //
+    { name: "About us", page: "about" }, // point it to collection
+    { name: "Blog", page: "blog" }, // static for now
   ];
 
-  const categoriesList: Category[] = [
-    {
-      id: "1",
-      name: "All",
-      slug: "all",
-      productCount: 0,
-      imageUrl: "",
-    },
-    {
-      id: "2",
-      name: "Men",
-      slug: "men",
-      productCount: 0,
-      imageUrl: "",
-    },
-    {
-      id: "3",
-      name: "Women",
-      slug: "women",
-      productCount: 0,
-      imageUrl: "",
-    },
-    {
-      id: "4",
-      name: "Kids",
-      slug: "kids",
-      productCount: 0,
-      imageUrl: "",
-    },
-  ]
 
   useEffect(() => {
-      // getCategories()
-      //   .then(setCategories)
-      //   .catch((err) => console.error("Failed to load categories for Navbar", err));
-      
       if(categories.length === 0){
-        setCategories(categoriesList);
+        getCategories()
+          .then(setCategories)
+          .catch((err) => console.error("Failed to load categories for Navbar", err));
       }
     }, []);
 
   return (
     <nav className="bg-green-700 text-white shadow-md sticky top-0 z-50">
-      {/* Top Bar */}
-      <div className="bg-green-800 text-sm py-1.5 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto flex justify-between items-center">
-          <div className="flex items-center space-x-4">
-            <div className="relative group">
-              <button className="flex items-center hover:text-green-300">
-                English <ChevronDown size={16} className="ml-1" />
-              </button>
-              <div className="absolute left-0 mt-1 bg-white text-slate-700 rounded-md shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-20 p-1 min-w-[100px]">
-                <a href="#" onClick={(e) => e.preventDefault()} className="block px-3 py-1.5 text-xs hover:bg-green-100 rounded">
-                  Spanish
-                </a>
-              </div>
-            </div>
-            <div className="relative group">
-              <button className="flex items-center hover:text-green-300">
-                USD <ChevronDown size={16} className="ml-1" />
-              </button>
-              <div className="absolute left-0 mt-1 bg-white text-slate-700 rounded-md shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-20 p-1 min-w-[100px]">
-                <a href="#" onClick={(e) => e.preventDefault()} className="block px-3 py-1.5 text-xs hover:bg-green-100 rounded">
-                  EUR
-                </a>
-              </div>
-            </div>
-          </div>
-          <div className="flex items-center space-x-4">
-            <a
-              href="#"
-              onClick={(e) => {
-                e.preventDefault();
-                handleNav("credits");
-              }}
-              className="hover:text-green-300 text-xs"
-            >
-              Check-in to earn credits
-            </a>
-            <a
-              href="#"
-              onClick={(e) => {
-                e.preventDefault();
-                handleNav("partner-program");
-              }}
-              className="hover:text-green-300 text-xs"
-            >
-              Partner Program
-            </a>
-          </div>
-        </div>
-      </div>
       {/* Main Nav Bar */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
@@ -152,17 +104,6 @@ export const Navbar: React.FC<NavbarProps> = ({ onNavigate }) => {
               href="#"
               onClick={(e) => {
                 e.preventDefault();
-                handleNav("wishlist");
-              }}
-              className="hover:text-green-300 relative w-11 flex flex-col items-center"
-            >
-              <Heart size={24} /> <span className="text-xs">Wishlist</span>
-              <span className="absolute -top-1 -right-1.5 h-4 w-4 bg-orange-500 text-white text-[10px] rounded-full flex items-center justify-center">2</span>
-            </a>
-            <a
-              href="#"
-              onClick={(e) => {
-                e.preventDefault();
                 handleNav("cart");
               }}
               className="hover:text-green-300 relative w-11 flex flex-col items-center"
@@ -178,46 +119,67 @@ export const Navbar: React.FC<NavbarProps> = ({ onNavigate }) => {
           </div>
         </div>
       </div>
+      
       {/* Desktop Category/Main Links Bar */}
       <div className="hidden md:flex bg-green-700 border-t border-green-600">
         <div className="max-w-7xl mx-auto flex justify-center items-center space-x-6 px-4 h-12">
           {mainNavLinks.map((link) =>
             link.dropdown && link.name === "Categories" ? (
-              <div key={link.page} className="relative group">
-                <button className="text-sm font-medium hover:text-green-300 py-3 flex items-center">
-                  {link.name} <ChevronDown size={16} className="ml-1" />
+              <div key={link.page} className="relative" ref={categoriesDropdownRef}>
+                {" "}
+                {/* Removed 'group', added ref */}
+                <button
+                  onClick={toggleCategoriesDropdown} // Click to toggle
+                  onMouseEnter={() => setIsCategoriesDropdownOpen(true)} // Hover to open
+                  // onMouseLeave can be tricky with dropdowns; click-outside handles closing
+                  className="text-sm font-medium hover:text-green-300 py-3 flex items-center focus:outline-none"
+                  aria-haspopup="true"
+                  aria-expanded={isCategoriesDropdownOpen}
+                >
+                  {link.name} <ChevronDown size={16} className={`ml-1 transition-transform duration-200 ${isCategoriesDropdownOpen ? "rotate-180" : ""}`} />
                 </button>
-                <div className="absolute left-0 mt-0 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-20 transform scale-95 group-hover:scale-100 origin-top-left">
-                  <div className="py-1">
-                    {categories.length > 0 ? (
-                      categories.map((cat) => (
-                        <a
-                          key={cat.id}
-                          href="#"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            handleNav("products", { category: cat.slug });
-                          }}
-                          className="block px-4 py-2 text-sm text-slate-700 hover:bg-green-100 hover:text-green-700"
-                        >
-                          {cat.name}
-                        </a>
-                      ))
-                    ) : (
-                      <span className="block px-4 py-2 text-sm text-slate-500">Loading...</span>
-                    )}
-                    <a
-                      href="#"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        handleNav("products");
-                      }}
-                      className="block px-4 py-2 text-sm text-slate-700 font-semibold hover:bg-green-100 hover:text-green-700"
-                    >
-                      All Products
-                    </a>
+                {/* Dropdown Content - visibility controlled by state */}
+                {isCategoriesDropdownOpen && (
+                  <div
+                    onMouseLeave={() => setIsCategoriesDropdownOpen(false)} // Close on mouse leave from dropdown itself
+                    className="absolute left-0 mt-0 min-w-max max-w-xs rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-20 transition-opacity duration-200 ease-out"
+                    // Removed: opacity-0 group-hover:opacity-100 transform scale-95 group-hover:scale-100
+                    // Added: explicit visibility based on isCategoriesDropdownOpen
+                  >
+                    <div className="py-1" role="menu" aria-orientation="vertical" aria-labelledby="categories-menu-button">
+                      {categories.length > 0 ? (
+                        categories.map((cat) => (
+                          <a
+                            key={cat.id}
+                            href="#"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              handleNav("products", { category: cat.slug });
+                            }}
+                            className="block px-4 py-2 text-sm text-slate-700 hover:bg-green-100 hover:text-green-700 rounded mx-1 my-0.5"
+                            role="menuitem"
+                          >
+                            {cat.name}
+                          </a>
+                        ))
+                      ) : (
+                        <span className="block px-4 py-2 text-sm text-slate-500">Loading...</span>
+                      )}
+                      <div className="border-t border-slate-100 my-1"></div>
+                      <a
+                        href="#"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          handleNav("products");
+                        }}
+                        className="block px-4 py-2 text-sm text-slate-700 font-semibold hover:bg-green-100 hover:text-green-700 rounded mx-1 my-0.5"
+                        role="menuitem"
+                      >
+                        All Products
+                      </a>
+                    </div>
                   </div>
-                </div>
+                )}
               </div>
             ) : (
               <a
@@ -235,6 +197,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onNavigate }) => {
           )}
         </div>
       </div>
+      
       {/* Mobile Menu */}
       {isMobileMenuOpen && (
         <div className="md:hidden bg-green-700 border-t border-green-600">

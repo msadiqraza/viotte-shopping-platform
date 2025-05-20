@@ -53,7 +53,13 @@ export const ProductListingsPage: React.FC<ProductListingsPageProps> = ({ initia
       setIsLoading(true);
       setError(null);
       try {
-        const params = { category: selectedCategory, search: searchTerm, sort: currentSort, page: currentPage, limit: ITEMS_PER_PAGE_PLP };
+        const params = {
+          category: selectedCategory,
+          search: searchTerm,
+          // sort: currentSort,
+          page: currentPage,
+          limit: ITEMS_PER_PAGE_PLP,
+        };
         const response = await getProducts(params);
         setProducts(response.items);
         setTotalItems(response.totalItems);

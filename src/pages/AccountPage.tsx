@@ -9,6 +9,7 @@ import { OrdersSection } from "../components/accounts/OrdersSection";
 import { ManageAddressesSection } from "../components/accounts/ManageAddressesSection";
 import { PaymentMethodsSection } from "../components/accounts/PaymentMethodsSection";
 import { AccountPageProps, AccountTabId } from "../types";
+import { getCurrentUserId } from "../services";
 
 export const AccountPage: React.FC<AccountPageProps> = ({ initialTab = "personal-info", onNavigate }) => {
   const [activeTab, setActiveTab] = useState<AccountTabId>(initialTab);
@@ -20,7 +21,17 @@ export const AccountPage: React.FC<AccountPageProps> = ({ initialTab = "personal
   }, [initialTab]);
 
   useEffect(() => {
+    // TODO: handle better
     if (!userDetails) {
+      getCurrentUserId()
+        .then((userId) => {
+          if (userId === "false") {
+            onNavigate?.("login");
+            return;
+          }
+        })
+        .catch((err: Error) => console.error("Failed to get user ID", err));
+
       setIsLoadingUserDetails(true);
       getUserAccountDetails()
         .then(setUserDetails)

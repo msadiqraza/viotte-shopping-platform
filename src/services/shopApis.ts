@@ -1,32 +1,43 @@
 // --- Shop Endpoint (for the single main shop) ---
-import {Shop} from "../types";
+import { Shop } from "../types";
+import { supabase } from "../supabaseClient"; // Adjust path to your Supabase client initialization
 
-const MAIN_SHOP_SLUG = "yourstore"; 
+// --- Shop Endpoint (for the single main shop) ---
+export const getMainShopDetails = async (): Promise<Shop | null> => {
+  // Assuming you have one shop entry, or a way to identify the main one (e.g., fixed ID or slug)
+  const MAIN_SHOP_ID_OR_SLUG = import.meta.env.VITE_PUBLIC_SHOP_ID; // Example
+  if (!MAIN_SHOP_ID_OR_SLUG) {
+    throw new Error("Missing VITE_PUBLIC_SHOP_ID");
+  }
+  console.log("Fetching main shop details...", MAIN_SHOP_ID_OR_SLUG);
 
-export const getMainShopDetails = (): Promise<Shop> => {
-  console.warn(`Fetching MOCKED main shop data (slug: ${MAIN_SHOP_SLUG})`);
-  return new Promise((resolve) => setTimeout(() => {
-    const mockMainShop: Shop = {
-      id: 'main-store-001', slug: MAIN_SHOP_SLUG, name: 'YourStore Online',
-      avatarUrl: 'https://placehold.co/128x128/22c55e/FFFFFF?text=YS', 
-      bannerUrl: 'https://placehold.co/1200x300/15803d/FFFFFF?text=Welcome+to+YourStore',
-      rating: 4.7, reviewCount: 1234, followersCount: 5678,
-      description: "Welcome to YourStore, your premier destination for quality products and an exceptional shopping experience. We are committed to bringing you a diverse selection of items, from the latest trends to timeless classics, all curated with care and attention to detail. Our mission is to make online shopping easy, enjoyable, and reliable. Thank you for choosing YourStore!",
-      policies: { 
-        shipping: "We offer fast and reliable shipping on all orders. Standard shipping typically takes 3-5 business days. Expedited options are available at checkout. All items are carefully packaged to ensure they arrive in perfect condition.", 
-        returns: "Your satisfaction is our priority. If you're not completely happy with your purchase, you can return most items within 30 days for a full refund or exchange. Please see our full return policy page for details and exceptions.", 
-        payment: "We accept all major credit cards (Visa, MasterCard, American Express, Discover) as well as PayPal for secure and convenient payment." 
-      },
-      dateJoined: "2024-01-01T00:00:00Z", location: "Online Based",
-      contactInfo: { email: "support@yourstore.site", phone: "1-800-YOUR-STORE", website: "www.yourstore.site" }
-    };
-    resolve(mockMainShop);
-  }, 700));
+  const { data, error } = await supabase.from("shop").select("*").limit(5);
+
+  // .or(`id.eq.${MAIN_SHOP_ID_OR_SLUG},slug.eq.${MAIN_SHOP_ID_OR_SLUG}`) // Query by ID or slug
+  if (error) {
+    console.error("Supabase error details:", {
+      message: error.message,
+      details: error.details,
+      hint: error.hint,
+      code: error.code,
+    });
+    throw error;
+  }
+  
+  console.log("Main shop details fetched.", data);
+
+  if (!data) return null;
+  return (data[0] as Shop) || null;
 };
 
 export const followMainStore = async (): Promise<{ success: boolean; followersCount?: number }> => {
-  console.log(`UI: Following/Favoriting the main store`);
-  return new Promise(resolve => setTimeout(() => {
-    resolve({ success: true, followersCount: (Math.floor(Math.random() * 100) + 5678) });
-  }, 500));
+  const shopDetails = await getMainShopDetails();
+  if (!shopDetails) throw new Error("Main shop not found");
+
+  // This is a simplified example. Real implementation might involve a 'shop_followers' table.
+  // Or, if followers_count is just for display, it might be an RPC call to increment.
+  const newFollowersCount = (shopDetails.followersCount || 0) + 1;
+  const { error } = await supabase.from("shop").update({ followers_count: newFollowersCount }).eq("id", shopDetails.id);
+  if (error) throw error;
+  return { success: true, followersCount: newFollowersCount };
 };

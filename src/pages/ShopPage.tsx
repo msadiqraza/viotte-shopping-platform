@@ -29,6 +29,11 @@ export const ShopPage: React.FC<ShopPageProps> = ({ onNavigate }) => {
   const [totalShopProducts, setTotalShopProducts] = useState(0);
   const [currentProductSort, setCurrentProductSort] = useState("relevance");
   const [shopProductSearchTerm, setShopProductSearchTerm] = useState<string | undefined>();
+  const [policies, setPolicies] = useState({
+    shipping: "",
+    returns: "",
+    payment: "",
+  });
   const productSortOptions = [
     { value: "relevance", label: "Relevance" },
     { value: "price-asc", label: "Price: Low to High" },
@@ -44,6 +49,13 @@ export const ShopPage: React.FC<ShopPageProps> = ({ onNavigate }) => {
       setError(null);
       try {
         const shopData = await getMainShopDetails();
+        if (shopData) {
+          setPolicies({
+            shipping: shopData.policies_shipping,
+            returns: shopData.policies_returns,
+            payment: shopData.policies_payment,
+          });
+        }
         setMainShop(shopData);
       } catch (err: any) {
         console.error("Failed to fetch main shop details:", err);
@@ -62,7 +74,7 @@ export const ShopPage: React.FC<ShopPageProps> = ({ onNavigate }) => {
         try {
           const params = {
             shopId: mainShop.id,
-            sort: currentProductSort,
+            // sort: currentProductSort,
             page: currentProductPage,
             limit: MAIN_SHOP_PRODUCTS_PER_PAGE,
             search: shopProductSearchTerm,
@@ -155,7 +167,7 @@ export const ShopPage: React.FC<ShopPageProps> = ({ onNavigate }) => {
             </div>
           )}
           {activeTab === "about" && <ShopAboutSection description={mainShop.description} shopName={mainShop.name} />}
-          {activeTab === "policies" && <ShopPoliciesSection policies={mainShop.policies} />}
+          {activeTab === "policies" && <ShopPoliciesSection policies={policies} />}
         </div>
       </main>
     </div>

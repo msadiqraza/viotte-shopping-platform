@@ -1,93 +1,174 @@
-// --- ACCOUNT PAGE API MOCKS ---
-import {UserAccountDetails, GetProductsParams, PaginatedResponse, CollectionItem, Order, Address, PaymentMethod} from "../types";
-import {getProducts} from "./productApis";
+// -----------------------------------------------------------------------------
+// Part 3: Updated API Service Functions (Account-Related)
+// -----------------------------------------------------------------------------
+// These functions would replace or augment those in your existing `src/services/api.ts`.
+// They assume you have a `supabaseClient.ts` that exports the `supabase` client.
+// For brevity, error handling is simplified. Add more robust error handling in a real app.
 
-export const getUserAccountDetails = (): Promise<UserAccountDetails> => {
-  console.warn("Fetching MOCKED User Account Details");
-  return new Promise(resolve => setTimeout(() => resolve({
-    id: 'user123', firstName: 'John', lastName: 'Doe', email: 'johndoe@example.com',
-    phoneNumber: '703-123-4567', gender: 'Male', avatarUrl: 'https://placehold.co/100x100/3498db/ffffff?text=JD'
-  }), 500));
+import { supabase } from "../supabaseClient"; // Adjust path to your supabase client
+import { UserAccountDetails, Order, Address, PaymentMethod, Product, PaginatedResponse, GetProductsParams } from "../types"; // Adjust path
+import { getCurrentUserId } from "./index";
+import { getProducts } from "./productApis";
+
+const ITEMS_PER_PAGE_DEFAULT = 10;
+// --- ACCOUNT MANAGEMENT ---
+export const getUserAccountDetails = async (): Promise<UserAccountDetails | null> => {
+  const userId = await getCurrentUserId();
+  const { data: authUser } = await supabase.auth.getUser();
+
+  const { data, error } = await supabase.from("profiles").select("id, first_name, last_name, avatar_url, phone_number, gender").eq("id", userId);
+  if (error && error.code !== "PGRST116") throw error;
+  return data ? ({ ...data[0], email: authUser.user?.email || "" } as unknown as UserAccountDetails) : null;
 };
-export const updateUserAccountDetails = (details: Partial<UserAccountDetails>): Promise<{ success: boolean; updatedDetails: UserAccountDetails }> => {
-  console.warn("MOCK Updating User Account Details:", details);
-  const currentDetails = { 
-      id: 'user123', firstName: 'John', lastName: 'Doe', email: 'johndoe@example.com',
-      phoneNumber: '703-123-4567', gender: 'Male', avatarUrl: 'https://placehold.co/100x100/3498db/ffffff?text=JD'
+
+export const updateUserAccountDetails = async (
+  details: Partial<Omit<UserAccountDetails, "id" | "email">>
+): Promise<{ success: boolean; updatedDetails?: UserAccountDetails }> => {
+  const userId = await getCurrentUserId();
+  const { data: authUser } = await supabase.auth.getUser();
+
+  const updatePayload: any = { updated_at: new Date().toISOString() };
+  if (details.firstName !== undefined) updatePayload.first_name = details.firstName;
+  if (details.lastName !== undefined) updatePayload.last_name = details.lastName;
+  if (details.avatarUrl !== undefined) updatePayload.avatar_url = details.avatarUrl;
+  if (details.phoneNumber !== undefined) updatePayload.phone_number = details.phoneNumber;
+  if (details.gender !== undefined) updatePayload.gender = details.gender;
+
+  const { data, error } = await supabase
+    .from("profiles")
+    .update(updatePayload)
+    .eq("id", userId)
+    .select("id, first_name, last_name, avatar_url, phone_number, gender");
+  if (error) throw error;
+  const updatedDetailsWithEmail = data ? ({ ...data[0], email: authUser.user?.email || "" } as unknown as UserAccountDetails) : undefined;
+  return { success: !!data, updatedDetails: updatedDetailsWithEmail };
+};
+
+// User Collection (Wishlist)
+export const getUserCollection = async (params: GetProductsParams): Promise<PaginatedResponse<Product>> => {
+  const userId = await getCurrentUserId();
+  const page = params.page || 1;
+  const limit = params.limit || ITEMS_PER_PAGE_DEFAULT;
+  const offset = (page - 1) * limit;
+
+  // Fetch product_ids from collection_items
+  const {
+    data: collectionLinks,
+    error: collectionError,
+    count: collectionCount,
+  } = await supabase
+    .from("collection_items")
+    .select("product_id", { count: "exact" })
+    .eq("user_id", userId)
+    .order("date_added", { ascending: false }) // Example sort
+    .range(offset, offset + limit - 1);
+
+  if (collectionError) throw collectionError;
+  if (!collectionLinks || collectionLinks.length === 0) {
+    return { items: [], totalItems: 0, totalPages: 0, currentPage: page, itemsPerPage: limit };
+  }
+
+  const productIds = collectionLinks.map((item) => item.product_id);
+  // Fetch actual product details for these IDs
+  const productsResponse = await getProducts({ ids: productIds.join(","), limit: productIds.length }); // Fetch all linked products
+  return {
+    items: productsResponse.items,
+    totalItems: collectionCount || 0,
+    totalPages: Math.ceil((collectionCount || 0) / limit),
+    currentPage: page,
+    itemsPerPage: limit,
   };
-  const updated = { ...currentDetails, ...details } as UserAccountDetails;
-  return Promise.resolve({ success: true, updatedDetails: updated });
 };
-export const getUserCollection = (params: GetProductsParams): Promise<PaginatedResponse<CollectionItem>> => {
-  console.warn("Fetching MOCKED User Collection (wishlist)");
-  return getProducts({ ...params, isFeatured: true, limit: params.limit || 10 }); 
+
+export const addToCollection = async (productId: string): Promise<{ success: boolean }> => {
+  const userId = await getCurrentUserId();
+  const { error } = await supabase.from("collection_items").insert({ user_id: userId, product_id: productId });
+  if (error && error.code !== "23505") throw error; // 23505 is unique_violation, item already exists
+  return { success: !error || error.code === "23505" };
 };
-export const getUserOrders = (params: { page?: number; limit?: number; status?: Order['status'] }): Promise<PaginatedResponse<Order>> => {
-  console.warn("Fetching MOCKED User Orders with params:", params);
-  return new Promise(resolve => setTimeout(() => { 
-    const itemsPerPage = params.limit || 5;
-    const mockOrders: Order[] = Array.from({ length: 12 }, (_, i) => ({
-      id: `order${i + 1}`, orderNumber: `YS000${1001 + i}`,
-      datePlaced: new Date(Date.now() - i * 3 * 24 * 60 * 60 * 1000).toISOString(),
-      status: i % 4 === 0 ? 'Delivered' : i % 4 === 1 ? 'Shipped' : i % 4 === 2 ? 'Processing' : 'Pending',
-      items: [
-        { id: `p${i+1}`, name: `Product ${i+1} in Order`, priceAtPurchase: 20 + i*5, quantity: 1, imageUrl: `https://placehold.co/80x80/aabbcc/ffffff?text=P${i+1}`, category: 'Mock', rating: 4, stock: 1, description: '', price: 20 + i*5 },
-      ],
-      subtotal: 20 + i*5, shippingCost: 5, taxes: (20+i*5)*0.1, totalAmount: (20+i*5)*1.1 + 5,
-      shippingAddress: { id: 'addr1', type: 'Shipping', fullName: 'John Doe', streetAddress1: '123 Main St', city: 'Anytown', state: 'CA', zipCode: '90210', country: 'USA', isDefault: true },
-      paymentMethod: "CreditCard", paymentDetails: { paymentStatus: 'Paid' }
-    }));
-    const filteredOrders = params.status ? mockOrders.filter(o => o.status === params.status) : mockOrders;
-    const totalItems = filteredOrders.length; const totalPages = Math.ceil(totalItems / itemsPerPage);
-    const page = params.page || 1; const paginatedItems = filteredOrders.slice((page - 1) * itemsPerPage, page * itemsPerPage);
-    resolve({ items: paginatedItems, totalItems, totalPages, currentPage: page, itemsPerPage });
-  }, 600));
+export const removeFromCollection = async (productId: string): Promise<{ success: boolean }> => {
+  const userId = await getCurrentUserId();
+  const { error } = await supabase.from("collection_items").delete().match({ user_id: userId, product_id: productId });
+  if (error) throw error;
+  return { success: true };
 };
-export const getUserAddresses = (): Promise<Address[]> => {
-  console.warn("Fetching MOCKED User Addresses");
-  return new Promise(resolve => setTimeout(() => resolve([
-    { id: 'addr1', type: 'Shipping', fullName: 'John Doe', streetAddress1: '123 Main St', city: 'Anytown', state: 'CA', zipCode: '90210', country: 'USA', isDefault: true, phoneNumber: '555-123-4567' },
-    { id: 'addr2', type: 'Billing', fullName: 'John Doe', streetAddress1: '456 Oak Ave', streetAddress2: 'Unit B', city: 'Otherville', state: 'NY', zipCode: '10001', country: 'USA', phoneNumber: '555-987-6543' },
-  ]), 400));
-};
-export const addUserAddress = (address: Omit<Address, 'id' | 'isDefault'>): Promise<{ success: boolean; address: Address }> => {
-  console.warn("MOCK Adding User Address:", address);
-  const newAddress: Address = { ...address, id: `addr${Date.now()}`, isDefault: false };
-  return Promise.resolve({ success: true, address: newAddress });
-};
-export const updateUserAddress = (addressId: string, updates: Partial<Address>): Promise<{ success: boolean; address: Address }> => {
-  console.warn(`MOCK Updating User Address ${addressId}:`, updates);
-  const updatedAddress: Address = { 
-      id: addressId, type: 'Shipping', fullName: 'John Updated', streetAddress1: '123 Main St Updated', 
-      city: 'Anytown', state: 'CA', zipCode: '90210', country: 'USA', ...updates 
+
+// User Orders
+export const getUserOrders = async (params: { page?: number; limit?: number; status?: Order["status"] }): Promise<PaginatedResponse<Order>> => {
+  const userId = await getCurrentUserId();
+  const page = params.page || 1;
+  const limit = params.limit || ITEMS_PER_PAGE_DEFAULT;
+  const offset = (page - 1) * limit;
+
+  let query = supabase
+    .from("orders")
+    .select(`*, order_items(*)`, { count: "exact" }) // Fetch related order_items
+    .eq("user_id", userId);
+
+  if (params.status) query = query.eq("status", params.status);
+  query = query.order("date_placed", { ascending: false }).range(offset, offset + limit - 1);
+
+  const { data, error, count } = await query;
+  if (error) throw error;
+  return {
+    items: (data as Order[]) || [],
+    totalItems: count || 0,
+    totalPages: Math.ceil((count || 0) / limit),
+    currentPage: page,
+    itemsPerPage: limit,
   };
-  return Promise.resolve({ success: true, address: updatedAddress });
 };
-export const deleteUserAddress = (addressId: string): Promise<{ success: boolean }> => {
-  console.warn(`MOCK Deleting User Address ${addressId}`);
-  return Promise.resolve({ success: true });
+
+// User Addresses
+export const getUserAddresses = async (): Promise<Address[]> => {
+  const userId = await getCurrentUserId();
+  const { data, error } = await supabase.from("addresses").select("*").eq("user_id", userId).order("is_default", { ascending: false });
+  if (error) throw error;
+  return data || [];
 };
-export const setDefaultAddress = (addressId: string, type: 'Shipping' | 'Billing'): Promise<{ success: boolean }> => {
-    console.warn(`MOCK Setting default ${type} address to ${addressId}`);
-    return Promise.resolve({ success: true });
+export const addUserAddress = async (addressInput: Omit<Address, "id" | "user_id" | "isDefault">): Promise<Address> => {
+  const userId = await getCurrentUserId();
+  const { data, error } = await supabase
+    .from("addresses")
+    .insert([{ ...addressInput, user_id: userId }])
+    .select()
+    .single();
+  if (error) throw error;
+  return data as Address;
 };
-export const getUserPaymentMethods = (): Promise<PaymentMethod[]> => {
-  console.warn("Fetching MOCKED User Payment Methods");
-  return new Promise(resolve => setTimeout(() => resolve([
-    { id: 'pm1', type: 'CreditCard', cardBrand: 'Visa', last4: '1234', expiryMonth: '12', expiryYear: '2025', nameOnCard: 'John Doe', isDefault: true },
-    { id: 'pm2', type: 'PayPal', email: 'johndoe@paypal.example.com' },
-  ]), 450));
+export const updateUserAddress = async (addressId: string, updates: Partial<Omit<Address, "id" | "user_id">>): Promise<Address> => {
+  const userId = await getCurrentUserId();
+  const { data, error } = await supabase
+    .from("addresses")
+    .update({ ...updates, updated_at: new Date() })
+    .match({ id: addressId, user_id: userId })
+    .select()
+    .single();
+  if (error) throw error;
+  if (!data) throw new Error("Address not found or permission denied.");
+  return data as Address;
 };
-export const addUserPaymentMethod = (method: Omit<PaymentMethod, 'id' | 'isDefault'>): Promise<{ success: boolean; paymentMethod: PaymentMethod }> => {
-  console.warn("MOCK Adding User Payment Method:", method);
-  const newMethod: PaymentMethod = { ...method, id: `pm${Date.now()}`, isDefault: false };
-  return Promise.resolve({ success: true, paymentMethod: newMethod });
+export const deleteUserAddress = async (addressId: string): Promise<void> => {
+  const userId = await getCurrentUserId();
+  const { error } = await supabase.from("addresses").delete().match({ id: addressId, user_id: userId });
+  if (error) throw error;
 };
-export const deleteUserPaymentMethod = (methodId: string): Promise<{ success: boolean }> => {
-  console.warn(`MOCK Deleting User Payment Method ${methodId}`);
-  return Promise.resolve({ success: true });
+export const setDefaultAddress = async (addressId: string, type: "Shipping" | "Billing"): Promise<void> => {
+  const userId = await getCurrentUserId();
+  // Use an RPC function for transactions in Supabase for atomicity
+  const { error } = await supabase.rpc("set_default_address", {
+    p_user_id: userId,
+    p_address_id: addressId,
+    p_address_type: type,
+  });
+  if (error) throw error;
 };
-export const setDefaultPaymentMethod = (methodId: string): Promise<{ success: boolean }> => {
-    console.warn(`MOCK Setting default payment method to ${methodId}`);
-    return Promise.resolve({ success: true });
+
+// User Payment Methods
+export const getUserPaymentMethods = async (): Promise<PaymentMethod[]> => {
+  const userId = await getCurrentUserId();
+  const { data, error } = await supabase.from("payment_methods").select("*").eq("user_id", userId).order("is_default", { ascending: false });
+  if (error) throw error;
+  return data || [];
 };
+// Add/Update/Delete for Payment Methods would be similar, keeping in mind PCI compliance.

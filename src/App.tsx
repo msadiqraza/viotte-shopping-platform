@@ -15,10 +15,24 @@ import { ShopPage } from "./pages/ShopPage";
 import { CheckoutPage } from "./pages/CheckoutPage";
 import { BlogPreview } from "./components/landing/BlogPreview";
 import { BlogPost } from "./types";
+import { AboutUsPage } from "./pages/AboutUsPage";
+import { AuthPage } from "./pages/AuthPage";
+import { useEffect, useState } from "react";
+import { getMainShopDetails } from "./services/shopApis";
 
 function App() {
   const navigate = useNavigate();
+const [shopDetails, setShopDetails] = useState(false);
+  useEffect(() => {
+    if (!shopDetails) {
+      getMainShopDetails().then(() => setShopDetails(true));
+    }
 
+    setTimeout(() => {
+      setShopDetails(false);
+    }, 10000);
+  }, [shopDetails]);
+  
   const onNavigate = (path: string) => {
     navigate(path);
   };
@@ -68,13 +82,17 @@ function App() {
             
             {/* Navbar */}
             <Route path="/account" element={<AccountPage onNavigate={onNavigate} />} />
+            <Route path="/login" element={<AuthPage onNavigate={onNavigate} initialMode="login" />} />
             <Route path="/cart" element={<CartPage onNavigate={onNavigate} />} />
             
             <Route path="/products" element={<ProductListingsPage onNavigate={onNavigate} />} />
             <Route path="/product/:id" element={<ProductDetailPage onNavigate={onNavigate} />} />
             
             <Route path="/shop" element={<ShopPage onNavigate={onNavigate} />} />
+            <Route path="/shop/about" element={<ShopPage onNavigate={onNavigate} />} />
+            <Route path="/shop/policies" element={<ShopPage onNavigate={onNavigate} />} />
             
+            <Route path="/about" element={<AboutUsPage onNavigate={onNavigate} />} />
             {/* Checkout */}
             <Route path="/blog" element={<BlogPreview posts={blogPosts} onNavigate={onNavigate} />} />
             <Route path="/checkout" element={<CheckoutPage onNavigate={onNavigate} />} />
