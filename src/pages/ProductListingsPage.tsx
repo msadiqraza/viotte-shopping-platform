@@ -6,11 +6,12 @@ import { getCategories as getCategoriesPLP } from "../services/utilityApis";
 import { ProductCard } from "../components/shared/ProductCard";
 import { FilterControls } from "../components/shared/FilterControls";
 import { Pagination as PaginationPLP } from "../components/shared/Pagination";
+import { NavigateParams } from "../types";
 
 interface ProductListingsPageProps {
   initialCategorySlug?: string;
   initialSearchTerm?: string;
-  onNavigate: (page: string, params?: any) => void;
+  onNavigate: (page: string, params?: NavigateParams) => void;
 }
 
 const ITEMS_PER_PAGE_PLP = 15;

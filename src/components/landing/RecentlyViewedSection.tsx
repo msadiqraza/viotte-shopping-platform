@@ -3,10 +3,11 @@ import React, { useState, useEffect } from "react"; // Already imported
 import { Product } from "../../types";
 import { getProductsByIds } from "../../services/productApis"; // addProductToRecentlyViewed is now in services
 import { ProductCarousel } from "../shared/ProductCarousel";
+import { NavigateParams } from "../../types";
 
 const MAX_RECENTLY_VIEWED_DISPLAY_LANDING = 5;
 interface RecentlyViewedSectionProps {
-  onNavigate: (page: string, params?: any) => void;
+  onNavigate: (page: string, params?: NavigateParams) => void;
 }
 export const RecentlyViewedSection: React.FC<RecentlyViewedSectionProps> = ({ onNavigate }) => {
   const [recentlyViewedProducts, setRecentlyViewedProducts] = useState<Product[]>([]);

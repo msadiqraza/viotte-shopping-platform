@@ -2,10 +2,11 @@
 import React from "react"; // Already imported
 import { BlogPost } from "../../types"; // Adjust path
 import { BlogPostCard } from "../shared/BlogPostCard"; // Adjust path
+import { NavigateParams } from "../../types";
 
 interface BlogPreviewProps {
   posts: BlogPost[];
-  onNavigate: (page: string, params?: any) => void;
+  onNavigate: (page: string, params?: NavigateParams) => void;
 }
 
 export const BlogPreview: React.FC<BlogPreviewProps> = ({ posts, onNavigate }) => {

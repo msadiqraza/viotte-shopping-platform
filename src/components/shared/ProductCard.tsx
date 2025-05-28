@@ -1,11 +1,11 @@
 // src/components/shared/ProductCard.tsx
 import React from "react";
-import { Product } from "../../types"; // Adjust path: e.g., ../../types
+import { Product, NavigateParams } from "../../types"; // Adjust path: e.g., ../../types
 import { Star, ShoppingCart as CartIcon } from "lucide-react";
 
 interface ProductCardProps {
   product: Product;
-  onNavigate: (page: string, params?: any) => void;
+  onNavigate: (page: string, params?: NavigateParams) => void;
 }
 
 export const ProductCard: React.FC<ProductCardProps> = ({ product, onNavigate }) => {

@@ -3,10 +3,11 @@ import React, { useState } from "react";
 import { Shop } from "../../types"; // Adjust path
 import { Star, Users, MessageCircle, Heart as HeartShopIcon } from "lucide-react";
 import { followMainStore } from "../../services/shopApis"; // Adjust path
+import { NavigateParams } from "../../types";
 
 interface ShopHeaderProps {
   shop: Shop;
-  onNavigate: (page: string, params?: any) => void;
+  onNavigate: (page: string, params?: NavigateParams) => void;
 }
 export const ShopHeader: React.FC<ShopHeaderProps> = ({ shop, onNavigate }) => {
   const [isFollowed, setIsFollowed] = useState(false);

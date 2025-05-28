@@ -11,6 +11,7 @@ import {
   Lightbulb,
   CheckCircle,
 } from "lucide-react";
+import { NavigateParams } from "../types";
 // Assume a mock service function for contact form submission
 // import { sendContactMessage } from '../services/api'; // You would create this in project_services_v1
 // Assume ContactFormData type
@@ -45,7 +46,7 @@ const sendContactMessage = async (
   );
 };
 
-export const AboutUsPage: React.FC<{ onNavigate: (page: string, params?: any) => void }> = ({
+export const AboutUsPage: React.FC<{ onNavigate: (page: string, params?: NavigateParams) => void }> = ({
   onNavigate,
 }) => {
   const [formData, setFormData] = useState<ContactFormData>({
@@ -59,6 +60,8 @@ export const AboutUsPage: React.FC<{ onNavigate: (page: string, params?: any) =>
     message: string;
   }>({ type: "idle", message: "" });
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  console.log("onNavigate", onNavigate.length);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;

@@ -17,7 +17,7 @@ import { useLoginPrompt } from "../contexts/LoginPromptContext";
 import { addSupabaseItemToCart } from "../services/cartCheckoutApis"; // Assuming you have this
 import {
   addToCollection as addToWishlistService,
-  removeFromCollection as removeFromWishlistService,
+  // removeFromCollection as removeFromWishlistService,
 } from "../services/accountApis"; // Assuming
 
 export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({ onNavigate }) => {

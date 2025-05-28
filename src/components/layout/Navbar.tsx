@@ -12,9 +12,18 @@ import {
   ShieldCheckIcon,
 } from "lucide-react";
 import { getCategories } from "../../services/utilityApis";
-import { Category, NavbarProps } from "../../types"; // Assuming NavbarProps is defined in types
+import { Category, NavbarProps, NavigateParams } from "../../types"; // Assuming NavbarProps is defined in types
 import { useAuth } from "../../contexts/AuthContext"; // Adjust path as needed
 import { isCurrentUserAdmin } from "../../services/adminApis"; // Adjust path as needed
+
+type NavLink = {
+  name: string;
+  page: string;
+  dropdown?: boolean;
+  isAccountLink?: boolean;
+  separatorBefore?: boolean;
+  icon?: React.ComponentType<{ size: number; className?: string }>;
+};
 
 export const Navbar: React.FC<NavbarProps> = ({ onNavigate }) => {
   const { user, loading: authLoading } = useAuth();
@@ -72,7 +81,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onNavigate }) => {
     }
   };
 
-  const handleNav = (page: string, params?: any) => {
+  const handleNav = (page: string, params?: NavigateParams) => {
     setIsMobileMenuOpen(false);
     setIsCategoriesDropdownOpen(false);
     onNavigate(page, params);
@@ -84,7 +93,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onNavigate }) => {
   };
 
   // Main navigation links for desktop (second row)
-  const mainDesktopNavLinks = [
+  const mainDesktopNavLinks: NavLink[] = [
     { name: "Categories", page: "categories-dropdown", dropdown: true },
     { name: "Shop", page: "shop" },
     { name: "About Us", page: "about" },
@@ -92,7 +101,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onNavigate }) => {
   ];
 
   // Links for the mobile menu (includes main links and additional ones)
-  const mobileNavLinks = [
+  const mobileNavLinks: NavLink[] = [
     ...mainDesktopNavLinks, // Includes Categories (which will need special handling for dropdown in mobile)
     // Separator and account related links
     { name: "Account", page: "account", isAccountLink: true, separatorBefore: true },

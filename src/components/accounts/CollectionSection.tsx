@@ -32,8 +32,8 @@ export const CollectionSection: React.FC<CollectionSectionProps> = ({ onNavigate
         setCollectionItems(response.items);
         setTotalItems(response.totalItems);
         setTotalPages(response.totalPages);
-      } catch (err: any) {
-        setError(err.message || "Could not load collection.");
+      } catch (err: Error | unknown) {
+        setError(err instanceof Error ? err.message : "Could not load collection.");
       } finally {
         setIsLoading(false);
       }

@@ -1,11 +1,11 @@
 // --- src/components/shared/BlogPostCard.tsx ---
 import React from "react"; // Already imported
-import { BlogPost } from "../../types"; // Adjust path
+import { BlogPost, NavigateParams } from "../../types"; // Adjust path
 import { ArrowRight } from "lucide-react";
 
 interface BlogPostCardProps {
   post: BlogPost;
-  onNavigate: (page: string, params?: any) => void;
+  onNavigate: (page: string, params?: NavigateParams) => void;
 }
 export const BlogPostCard: React.FC<BlogPostCardProps> = ({ post, onNavigate }) => {
   const handleBlogClick = (e: React.MouseEvent) => {

@@ -25,6 +25,7 @@ import { AdminPage } from "./pages/AdminPage";
 import { AuthProvider } from "./contexts/AuthContext"; // Assuming path
 import { LoginPromptProvider, useLoginPrompt } from "./contexts/LoginPromptContext"; // Assuming path
 import { useLocation } from "react-router-dom";
+import { NavigateParams } from "./types";
 
 // Helper component to render the login modal
 const LoginPromptModal = () => {
@@ -65,7 +66,7 @@ function AppContent() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const handleNavigate = (path: string, params?: any) => {
+  const handleNavigate = (path: string, params?: NavigateParams) => {
     if (params?.returnUrl) {
       navigate(path, { state: { returnUrl: params.returnUrl } });
     } else {

@@ -4,10 +4,11 @@ import { supabase } from "../supabaseClient"; // Adjust path to your Supabase cl
 import { User } from "@supabase/supabase-js";
 import { Mail, Lock, LogIn, UserPlus, KeyRound, Eye, EyeOff } from "lucide-react";
 import { useLocation } from "react-router-dom";
+import { NavigateParams } from "../types";
 
 interface AuthPageProps {
   onLoginSuccess?: (user: User) => void; // Callback for successful login
-  onNavigate: (page: string, params?: any) => void; // For navigation to sign-up or forgot-password
+  onNavigate: (page: string, params?: NavigateParams) => void; // For navigation to sign-up or forgot-password
   initialMode?: "login" | "signup"; // To set the initial view
   isModal?: boolean; // Optional: if you need different behavior/styling in modal
 }

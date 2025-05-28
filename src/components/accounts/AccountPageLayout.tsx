@@ -27,6 +27,9 @@ const accountTabsList: { id: AccountTabId; label: string; icon: React.ElementTyp
   { id: "payment-methods", label: "Payment Methods", icon: CreditCard },
 ];
 export const AccountPageLayout: React.FC<AccountPageLayoutProps> = ({ activeTab, onTabChange, children, avatarUrl, userName }) => {
+  console.log("avatarUrl", avatarUrl);
+  console.log("userName", userName);
+  
   return (
     <div className="bg-stone-100 py-8">
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

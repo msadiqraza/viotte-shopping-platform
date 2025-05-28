@@ -10,10 +10,11 @@ import { FilterControls as ShopFilterControls } from "../components/shared/Filte
 import { Pagination as ShopPagination } from "../components/shared/Pagination";
 import { ShopAboutSection } from "../components/shop/ShopAboutSection";
 import { ShopPoliciesSection } from "../components/shop/ShopPoliciesSection";
+import { NavigateParams } from "../types";
 
 const MAIN_SHOP_PRODUCTS_PER_PAGE = 15;
 interface ShopPageProps {
-  onNavigate: (page: string, params?: any) => void;
+  onNavigate: (page: string, params?: NavigateParams) => void;
 }
 type MainShopActiveTab = "products" | "about" | "policies";
 

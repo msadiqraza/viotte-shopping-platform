@@ -1,6 +1,6 @@
 // src/pages/JoinSellerPage.tsx
 import React, { useState, useEffect } from "react";
-import { Briefcase, User, Mail, FileText, Send } from "lucide-react";
+import { Briefcase, Mail, FileText, Send } from "lucide-react";
 import { useAuth } from "../contexts/AuthContext"; // Adjust path
 import { useLoginPrompt } from "../contexts/LoginPromptContext"; // Adjust path
 import {
@@ -10,9 +10,10 @@ import {
   SellerApplication,
 } from "../services/sellerApis"; // Adjust path
 import { AuthenticationRequiredError } from "../services/creditApis";
+import { NavigateParams } from "../types";
 
 interface JoinSellerPageProps {
-  onNavigate?: (page: string, params?: any) => void;
+  onNavigate?: (page: string, params?: NavigateParams) => void;
 }
 
 export const JoinSellerPage: React.FC<JoinSellerPageProps> = ({ onNavigate }) => {

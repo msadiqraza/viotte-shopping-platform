@@ -1,9 +1,10 @@
 // --- src/components/layout/Footer.tsx ---
 import React from "react"; // Already imported
 import { NewsletterSignup } from "../landing/NewsletterSignup"; // This path will need adjustment if NewsletterSignup moves
+import { NavigateParams } from "../../types";
 
 interface FooterProps {
-  onNavigate: (page: string, params?: any) => void;
+  onNavigate: (page: string, params?: NavigateParams) => void;
 }
 
 export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {

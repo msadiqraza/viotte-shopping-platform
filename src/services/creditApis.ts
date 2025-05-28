@@ -1,7 +1,7 @@
 // src/services/creditApis.ts
 import { supabase } from "../supabaseClient";
 import { getCurrentUserId } from "./index"; // Assuming this is your central auth helper
-import { UserAccountDetails } from "../types"; // Assuming UserAccountDetails has 'credit'
+// import { UserAccountDetails } from "../types"; // Assuming UserAccountDetails has 'credit'
 
 // Define an error for when authentication is required but missing
 export class AuthenticationRequiredError extends Error {

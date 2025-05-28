@@ -234,7 +234,7 @@ export interface PersonalInfoSectionProps {
 }
 
 export interface CollectionSectionProps {
-  onNavigate: (page: string, params?: any) => void;
+  onNavigate: (page: string, params?: NavigateParams) => void;
 }
 
 export type AccountTabId =
@@ -246,9 +246,25 @@ export type AccountTabId =
 
 export interface AccountPageProps {
   initialTab?: AccountTabId;
-  onNavigate: (page: string, params?: any) => void;
+  onNavigate: (page: string, params?: NavigateParams) => void;
 }
 
 export interface NavbarProps {
-  onNavigate: (page: string, params?: any) => void;
+  onNavigate: (page: string, params?: NavigateParams) => void;
+}
+
+export interface NavigateParams {
+  returnUrl?: string;
+  categorySlug?: string;
+  slug?: string;
+  initialSearchTerm?: string;
+  id?: string;
+  productId?: string;
+  quantity?: number;
+  priceAtPurchase?: number;
+  selectedSize?: string;
+  selectedColor?: string;
+  orderNumber?: string;
+  orderId?: string;
+  replace?: boolean;
 }

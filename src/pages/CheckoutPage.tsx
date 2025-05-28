@@ -5,9 +5,10 @@ import { CheckoutStepIndicator } from "../components/checkout/CheckoutStepIndica
 import { useAuth } from "../contexts/AuthContext";
 import { useLoginPrompt } from "../contexts/LoginPromptContext";
 import { useNavigate } from "react-router-dom";
+import { NavigateParams } from "../types";
 
 interface CheckoutPageProps {
-  onNavigate: (page: string, params?: any) => void;
+  onNavigate: (page: string, params?: NavigateParams) => void;
 }
 export const CheckoutPage: React.FC<CheckoutPageProps> = ({ onNavigate }) => {
   const [currentStep, setCurrentStep] = useState(1);

@@ -1,7 +1,7 @@
 // src/services/adminApis.ts
 import { supabase } from "../supabaseClient";
-import { getCurrentUserId } from "./index"; // For getting current user if needed for admin check
-import { AuthenticationRequiredError } from "./creditApis"; // Reuse error
+// import { getCurrentUserId } from "./index"; // For getting current user if needed for admin check
+// import { AuthenticationRequiredError } from "./creditApis"; // Reuse error
 import { SellerApplication, mapToSellerApplication } from "./sellerApis"; // Reuse type and mapper
 
 /**

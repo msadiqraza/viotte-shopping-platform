@@ -4,12 +4,13 @@ import React, { useState, useEffect, useRef, useCallback } from "react"; // Alre
 import { Product as ProductTypeCarousel } from "../../types"; // Aliased to avoid conflict
 import { ProductCard } from "./ProductCard";
 import { ChevronLeft, ChevronRight } from "lucide-react"; // Already imported
+import { NavigateParams } from "../../types";
 
 interface ProductCarouselProps {
   title: string;
   products: ProductTypeCarousel[];
   itemsToShow?: number;
-  onNavigate: (page: string, params?: any) => void;
+  onNavigate: (page: string, params?: NavigateParams) => void;
 }
 export const ProductCarousel: React.FC<ProductCarouselProps> = ({ title, products, itemsToShow = 5, onNavigate }) => {
   const [currentIndex, setCurrentIndex] = useState(0);

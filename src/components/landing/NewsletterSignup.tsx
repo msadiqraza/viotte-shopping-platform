@@ -22,8 +22,8 @@ export const NewsletterSignup: React.FC = () => {
       const response = await subscribeToNewsletter(email);
       setMessage(response.message);
       setEmail("");
-    } catch (err: any) {
-      setError(err.message || "Failed to subscribe. Please try again.");
+    } catch (err: Error | unknown) {
+      setError(err instanceof Error ? err.message : "Failed to subscribe. Please try again.");
     } finally {
       setIsLoading(false);
     }

@@ -1,6 +1,6 @@
 // src/pages/AdminPage.tsx
 import React, { useState, useEffect } from "react";
-import { ShieldCheck, UserCheck, UserX, Edit, Eye, CheckCircle, XCircle } from "lucide-react";
+import { ShieldCheck, UserCheck, UserX, Eye } from "lucide-react";
 import { useAuth } from "../contexts/AuthContext"; // Adjust path
 import {
   isCurrentUserAdmin,
@@ -8,10 +8,11 @@ import {
   updateSellerApplicationStatus,
 } from "../services/adminApis"; // Adjust path
 import { SellerApplication } from "../services/sellerApis";
+import { NavigateParams } from "../types";
 import { useNavigate } from "react-router-dom";
 
 interface AdminPageProps {
-  onNavigate?: (page: string, params?: any) => void;
+  onNavigate?: (page: string, params?: NavigateParams) => void;
 }
 
 type ApplicationStatusFilter = "pending" | "approved" | "rejected" | "all";
@@ -28,6 +29,8 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
   const [selectedApp, setSelectedApp] = useState<SellerApplication | null>(null);
   const [reviewerNotes, setReviewerNotes] = useState("");
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
+
+  console.log("onNavigate", onNavigate?.length);
 
   useEffect(() => {
     if (authLoading) {

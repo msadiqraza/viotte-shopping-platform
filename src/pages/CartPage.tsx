@@ -10,9 +10,10 @@ import { CartItemCard } from "../components/cart/CartItemCard"; //
 import { ShoppingBag, ChevronRight } from "lucide-react"; //
 import { useAuth } from "../contexts/AuthContext";
 import { useLoginPrompt } from "../contexts/LoginPromptContext";
+import { NavigateParams } from "../types";
 
 interface CartPageProps {
-  onNavigate: (page: string, params?: any) => void;
+  onNavigate: (page: string, params?: NavigateParams) => void;
 }
 
 export const CartPage: React.FC<CartPageProps> = ({ onNavigate }) => {

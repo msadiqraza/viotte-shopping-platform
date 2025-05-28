@@ -1,6 +1,6 @@
 // src/contexts/LoginPromptContext.tsx (New File)
 import React, { createContext, useContext, useState, useCallback } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 
 interface LoginPromptContextType {
   isLoginPromptVisible: boolean;
@@ -13,7 +13,7 @@ const LoginPromptContext = createContext<LoginPromptContextType | undefined>(und
 
 export const LoginPromptProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [isLoginPromptVisible, setIsLoginPromptVisible] = useState(false);
-  const [returnUrl, setReturnUrl] = useState<string | null>(null);
+  const [_returnUrl, setReturnUrl] = useState<string | null>(null);
   // const navigate = useNavigate();
   const location = useLocation();
 
@@ -33,7 +33,7 @@ export const LoginPromptProvider: React.FC<{ children: React.ReactNode }> = ({ c
   // Optional: A helper for components that want to trigger an action after login
   // This might be more complex depending on how you want the UX to flow
   const loginAndReturn = useCallback(
-    async (actionFn: () => Promise<any>) => {
+    async (_actionFn: () => Promise<any>) => {
       // This is a simplified version. You might want to store 'actionFn'
       // and execute it after successful login via the AuthPage.
       showLoginPrompt();

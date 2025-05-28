@@ -16,9 +16,10 @@ import {
   requestCreditForActivity,
   AuthenticationRequiredError,
 } from "../services/creditApis"; // Adjust path
+import { NavigateParams } from "../types";
 
 interface CreditsPageProps {
-  onNavigate?: (page: string, params?: any) => void;
+  onNavigate?: (page: string, params?: NavigateParams) => void;
 }
 
 export const CreditsPage: React.FC<CreditsPageProps> = ({ onNavigate }) => {

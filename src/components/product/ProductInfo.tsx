@@ -1,6 +1,6 @@
 // --- src/components/product/ProductInfo.tsx ---
 import React, { useState } from "react"; // Already imported
-import { Product } from "../../types"; // Adjust path
+import { Product, NavigateParams } from "../../types"; // Adjust path
 import { Star, Minus, Plus, MessageSquare, Heart as HeartIcon, ShoppingCart as CartIconProdInfo } from "lucide-react"; // Aliased CartIcon
 
 interface ProductInfoProps {
@@ -8,7 +8,7 @@ interface ProductInfoProps {
   onAddToCart: (productId: string, quantity: number, price: number, name?: string, imageUrl?: string, size?: string, color?: string) => void;
   onBuyNow: (productId: string, quantity: number) => void;
   onWishlist: (productId: string) => void;
-  onNavigate: (page: string, params?: any) => void;
+  onNavigate: (page: string, params?: NavigateParams) => void;
 }
 export const ProductInfo: React.FC<ProductInfoProps> = ({ product, onAddToCart, onBuyNow, onWishlist, onNavigate }) => {
   const [quantity, setQuantity] = useState(1);
