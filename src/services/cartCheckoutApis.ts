@@ -9,7 +9,7 @@ const getOrCreateUserCartId = async (userId: string): Promise<string> => {
         .from('user_carts')
         .select('id')
         .eq('user_id', userId)
-        .single();
+        .maybeSingle();
 
     if (fetchError && fetchError.code !== 'PGRST116') { // PGRST116: no rows found
         throw fetchError;
@@ -19,7 +19,7 @@ const getOrCreateUserCartId = async (userId: string): Promise<string> => {
             .from('user_carts')
             .insert({ user_id: userId })
             .select('id')
-            .single();
+            .maybeSingle();
         if (insertError) throw insertError;
         if (!newCart) throw new Error("Failed to create cart.");
         cart = newCart;
@@ -32,7 +32,7 @@ const fetchAndCalculateCart = async (cartId: string): Promise<Cart> => {
         .from('user_cart_items')
         .select(`
             *,
-            products (id, name, price, imageUrl, stock)
+            products (id, name, price, image_url, stock_quantity)
         `)
         .eq('cart_id', cartId);
 
@@ -95,7 +95,6 @@ export const addSupabaseItemToCart = async (item: { productId: string; quantity:
         const { error: insertError } = await supabase
             .from('user_cart_items')
             .insert({
-                cart_id: cartId,
                 product_id: item.productId,
                 quantity: item.quantity,
                 price_at_add: item.price, // Price when added

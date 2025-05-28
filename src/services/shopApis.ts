@@ -4,30 +4,25 @@ import { supabase } from "../supabaseClient"; // Adjust path to your Supabase cl
 
 // --- Shop Endpoint (for the single main shop) ---
 export const getMainShopDetails = async (): Promise<Shop | null> => {
-  // Assuming you have one shop entry, or a way to identify the main one (e.g., fixed ID or slug)
-  const MAIN_SHOP_ID_OR_SLUG = import.meta.env.VITE_PUBLIC_SHOP_ID; // Example
+  const MAIN_SHOP_ID_OR_SLUG = import.meta.env.VITE_PUBLIC_SHOP_ID;
   if (!MAIN_SHOP_ID_OR_SLUG) {
     throw new Error("Missing VITE_PUBLIC_SHOP_ID");
   }
-  console.log("Fetching main shop details...", MAIN_SHOP_ID_OR_SLUG);
 
-  const { data, error } = await supabase.from("shop").select("*").limit(5);
+  const { data, error } = await supabase
+    .from("shop")
+    .select("*")
+    .or(`id.eq.${MAIN_SHOP_ID_OR_SLUG},slug.eq.${MAIN_SHOP_ID_OR_SLUG}`) // Filter by ID or slug
+    .maybeSingle(); // Expects 0 or 1 row. Use .single() if the shop MUST exist.
 
-  // .or(`id.eq.${MAIN_SHOP_ID_OR_SLUG},slug.eq.${MAIN_SHOP_ID_OR_SLUG}`) // Query by ID or slug
   if (error) {
-    console.error("Supabase error details:", {
-      message: error.message,
-      details: error.details,
-      hint: error.hint,
-      code: error.code,
-    });
+    console.error("Supabase error details:", error);
     throw error;
   }
-  
-  console.log("Main shop details fetched.", data);
 
-  if (!data) return null;
-  return (data[0] as Shop) || null;
+  console.log("Main shop details fetched.", data); // data will be a single object or null
+
+  return data as Shop | null;
 };
 
 export const followMainStore = async (): Promise<{ success: boolean; followersCount?: number }> => {

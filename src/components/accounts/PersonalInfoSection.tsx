@@ -3,24 +3,40 @@ import { useState, useEffect } from "react";
 import { PersonalInfoSectionProps, UserAccountDetails } from "../../types";
 import { Edit3 } from "lucide-react";
 
-export const PersonalInfoSection: React.FC<PersonalInfoSectionProps> = ({ userDetails, onUpdateDetails, isLoading }) => {
+export const PersonalInfoSection: React.FC<PersonalInfoSectionProps> = ({
+  userDetails,
+  onUpdateDetails,
+  isLoading,
+}) => {
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState<Partial<UserAccountDetails>>(userDetails || {});
-  const [formMessage, setFormMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
+  const [formMessage, setFormMessage] = useState<{
+    type: "success" | "error";
+    text: string;
+  } | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
-    setFormData(userDetails || {});
-  }, [userDetails]);
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => setFormData({ ...formData, [e.target.name]: e.target.value });
+    if (!isEditing) {
+      setFormData(userDetails || {});
+    }
+  }, [userDetails, isEditing]);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setFormMessage(null);
     setIsSubmitting(true);
+
     const result = await onUpdateDetails(formData);
+
     if (result.success) {
       setFormMessage({ type: "success", text: "Information updated successfully!" });
       setIsEditing(false);
+      setFormData(result.updatedDetails || {});
+      console.log(result.updatedDetails);
     } else {
       setFormMessage({ type: "error", text: "Failed to update information. Please try again." });
     }
@@ -59,7 +75,11 @@ export const PersonalInfoSection: React.FC<PersonalInfoSectionProps> = ({ userDe
         <div className="flex justify-center mb-6">
           <div className="relative">
             <img
-              src={formData.avatarUrl || userDetails.avatarUrl || "https://placehold.co/120x120/e2e8f0/64748b?text=Avatar"}
+              src={
+                formData.avatar_url ||
+                userDetails.avatar_url ||
+                "https://placehold.co/120x120/e2e8f0/64748b?text=Avatar"
+              }
               alt="User Avatar"
               className="w-24 h-24 md:w-32 md:h-32 rounded-full object-cover border-4 border-white shadow-lg"
             />
@@ -72,13 +92,13 @@ export const PersonalInfoSection: React.FC<PersonalInfoSectionProps> = ({ userDe
                 <input
                   type="file"
                   id="avatarUpload"
-                  name="avatarUrl"
+                  name="avatar_url"
                   className="hidden"
                   onChange={(e) => {
                     if (e.target.files && e.target.files[0]) {
                       const reader = new FileReader();
                       reader.onloadend = () => {
-                        setFormData({ ...formData, avatarUrl: reader.result as string });
+                        setFormData({ ...formData, avatar_url: reader.result as string });
                       };
                       reader.readAsDataURL(e.target.files[0]);
                     }
@@ -90,14 +110,14 @@ export const PersonalInfoSection: React.FC<PersonalInfoSectionProps> = ({ userDe
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5">
           <div>
-            <label htmlFor="firstName" className="block text-sm font-medium text-slate-700 mb-1">
+            <label htmlFor="first_name" className="block text-sm font-medium text-slate-700 mb-1">
               First Name<span className="text-red-500">*</span>
             </label>
             <input
               type="text"
-              name="firstName"
-              id="firstName"
-              value={formData.firstName || ""}
+              name="first_name"
+              id="first_name"
+              value={formData.first_name || ""}
               onChange={handleChange}
               disabled={!isEditing}
               required
@@ -105,14 +125,14 @@ export const PersonalInfoSection: React.FC<PersonalInfoSectionProps> = ({ userDe
             />
           </div>
           <div>
-            <label htmlFor="lastName" className="block text-sm font-medium text-slate-700 mb-1">
+            <label htmlFor="last_name" className="block text-sm font-medium text-slate-700 mb-1">
               Last Name<span className="text-red-500">*</span>
             </label>
             <input
               type="text"
-              name="lastName"
-              id="lastName"
-              value={formData.lastName || ""}
+              name="last_name"
+              id="last_name"
+              value={formData.last_name || ""}
               onChange={handleChange}
               disabled={!isEditing}
               required
@@ -136,14 +156,14 @@ export const PersonalInfoSection: React.FC<PersonalInfoSectionProps> = ({ userDe
           />
         </div>
         <div>
-          <label htmlFor="phoneNumber" className="block text-sm font-medium text-slate-700 mb-1">
+          <label htmlFor="phone_number" className="block text-sm font-medium text-slate-700 mb-1">
             Phone Number
           </label>
           <input
             type="tel"
-            name="phoneNumber"
-            id="phoneNumber"
-            value={formData.phoneNumber || ""}
+            name="phone_number"
+            id="phone_number"
+            value={formData.phone_number || ""}
             onChange={handleChange}
             disabled={!isEditing}
             className="w-full p-2.5 border border-slate-300 rounded-md focus:ring-green-500 focus:border-green-500 disabled:bg-slate-100 disabled:text-slate-500 text-sm"
@@ -171,7 +191,9 @@ export const PersonalInfoSection: React.FC<PersonalInfoSectionProps> = ({ userDe
         {formMessage && (
           <div
             className={`p-3 rounded-md text-sm ${
-              formMessage.type === "success" ? "bg-green-50 text-green-700 border border-green-200" : "bg-red-50 text-red-700 border border-red-200"
+              formMessage.type === "success"
+                ? "bg-green-50 text-green-700 border border-green-200"
+                : "bg-red-50 text-red-700 border border-red-200"
             }`}
           >
             {formMessage.text}

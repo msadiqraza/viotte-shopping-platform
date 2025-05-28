@@ -5,7 +5,7 @@ import { BlogPostCard } from "../shared/BlogPostCard"; // Adjust path
 
 interface BlogPreviewProps {
   posts: BlogPost[];
-  onNavigate?: (page: string, params?: any) => void;
+  onNavigate: (page: string, params?: any) => void;
 }
 
 export const BlogPreview: React.FC<BlogPreviewProps> = ({ posts, onNavigate }) => {
@@ -25,7 +25,7 @@ export const BlogPreview: React.FC<BlogPreviewProps> = ({ posts, onNavigate }) =
           href="/blog"
           onClick={(e) => {
             e.preventDefault();
-            onNavigate?.("blog");
+            onNavigate("blog");
           }}
           className="text-sm font-medium text-orange-500 hover:text-orange-600 hover:underline"
         >

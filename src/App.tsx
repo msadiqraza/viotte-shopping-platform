@@ -17,24 +17,60 @@ import { BlogPreview } from "./components/landing/BlogPreview";
 import { BlogPost } from "./types";
 import { AboutUsPage } from "./pages/AboutUsPage";
 import { AuthPage } from "./pages/AuthPage";
-import { useEffect, useState } from "react";
-import { getMainShopDetails } from "./services/shopApis";
+import { CreditsPage } from "./pages/CreditsPage";
+import { JoinSellerPage } from "./pages/JoinSellerPage";
+import { AdminPage } from "./pages/AdminPage";
 
-function App() {
+// Contexts
+import { AuthProvider } from "./contexts/AuthContext"; // Assuming path
+import { LoginPromptProvider, useLoginPrompt } from "./contexts/LoginPromptContext"; // Assuming path
+import { useLocation } from "react-router-dom";
+
+// Helper component to render the login modal
+const LoginPromptModal = () => {
+  const { isLoginPromptVisible, hideLoginPrompt } = useLoginPrompt();
+  // const auth = useAuth(); // Get auth context to check user status
   const navigate = useNavigate();
-const [shopDetails, setShopDetails] = useState(false);
-  useEffect(() => {
-    if (!shopDetails) {
-      getMainShopDetails().then(() => setShopDetails(true));
-    }
+  const location = useLocation();
 
-    setTimeout(() => {
-      setShopDetails(false);
-    }, 10000);
-  }, [shopDetails]);
-  
-  const onNavigate = (path: string) => {
-    navigate(path);
+  // Extract returnUrl from location state if AuthPage was navigated to directly for the prompt
+  const returnUrlFromState = (location.state as { returnUrl?: string })?.returnUrl;
+
+  if (!isLoginPromptVisible && !returnUrlFromState) {
+    // Also check if we are on /login route due to prompt
+    return null;
+  }
+
+  const handleLoginSuccess = () => {
+    // user: any;
+    hideLoginPrompt();
+    const redirectPath = returnUrlFromState || "/account"; // Use state or default
+    navigate(redirectPath, { replace: true, state: {} }); // Clear state after redirect
+  };
+
+  // If using a modal overlay for AuthPage
+  if (isLoginPromptVisible) {
+    return (
+      <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+        <div className="bg-white rounded-lg shadow-xl h-full w-full">
+          <AuthPage onLoginSuccess={handleLoginSuccess} onNavigate={(page) => navigate(page)} />
+        </div>
+      </div>
+    );
+  }
+  return null; // If not visible and not on /login due to prompt
+};
+
+function AppContent() {
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const handleNavigate = (path: string, params?: any) => {
+    if (params?.returnUrl) {
+      navigate(path, { state: { returnUrl: params.returnUrl } });
+    } else {
+      navigate(path);
+    }
   };
 
   const blogPosts: BlogPost[] = [
@@ -74,32 +110,64 @@ const [shopDetails, setShopDetails] = useState(false);
   ];
 
   return (
-      <div className="flex flex-col min-h-screen font-sans">
-        <Navbar onNavigate={onNavigate}/>
-        <div className="flex-grow">
-          <Routes>
-            <Route path="/" element={<LandingPage onNavigate={onNavigate} />} />
-            
-            {/* Navbar */}
-            <Route path="/account" element={<AccountPage onNavigate={onNavigate} />} />
-            <Route path="/login" element={<AuthPage onNavigate={onNavigate} initialMode="login" />} />
-            <Route path="/cart" element={<CartPage onNavigate={onNavigate} />} />
-            
-            <Route path="/products" element={<ProductListingsPage onNavigate={onNavigate} />} />
-            <Route path="/product/:id" element={<ProductDetailPage onNavigate={onNavigate} />} />
-            
-            <Route path="/shop" element={<ShopPage onNavigate={onNavigate} />} />
-            <Route path="/shop/about" element={<ShopPage onNavigate={onNavigate} />} />
-            <Route path="/shop/policies" element={<ShopPage onNavigate={onNavigate} />} />
-            
-            <Route path="/about" element={<AboutUsPage onNavigate={onNavigate} />} />
-            {/* Checkout */}
-            <Route path="/blog" element={<BlogPreview posts={blogPosts} onNavigate={onNavigate} />} />
-            <Route path="/checkout" element={<CheckoutPage onNavigate={onNavigate} />} />
-          </Routes>
-        </div>
-        <Footer />
+    <div className="flex flex-col min-h-screen font-sans">
+      <Navbar onNavigate={handleNavigate} />
+      <div className="flex-grow">
+        <Routes>
+          <Route path="/" element={<LandingPage onNavigate={handleNavigate} />} />
+          <Route path="/account" element={<AccountPage onNavigate={handleNavigate} />} />
+
+          <Route
+            path="/login"
+            element={
+              <AuthPage
+                onNavigate={handleNavigate}
+                initialMode="login"
+                onLoginSuccess={() => {
+                  const returnUrl =
+                    (location.state as { returnUrl?: string })?.returnUrl || "/account";
+                  navigate(returnUrl, { replace: true, state: {} });
+                }}
+              />
+            }
+          />
+          <Route path="/cart" element={<CartPage onNavigate={handleNavigate} />} />
+
+          <Route path="/products" element={<ProductListingsPage onNavigate={handleNavigate} />} />
+          <Route path="/product/:id" element={<ProductDetailPage onNavigate={handleNavigate} />} />
+
+          <Route path="/shop" element={<ShopPage onNavigate={handleNavigate} />} />
+          {/* <Route path="/shop/about" element={<ShopPage onNavigate={handleNavigate} />} />
+          <Route path="/shop/policies" element={<ShopPage onNavigate={handleNavigate} />} /> */}
+
+          <Route path="/about" element={<AboutUsPage onNavigate={handleNavigate} />} />
+
+          <Route
+            path="/blog"
+            element={<BlogPreview posts={blogPosts} onNavigate={handleNavigate} />}
+          />
+          <Route path="/checkout" element={<CheckoutPage onNavigate={handleNavigate} />} />
+
+          <Route path="/credits" element={<CreditsPage onNavigate={handleNavigate} />} />
+          <Route path="/join-seller" element={<JoinSellerPage onNavigate={handleNavigate} />} />
+          <Route path="/admin" element={<AdminPage onNavigate={handleNavigate} />} />
+        </Routes>
       </div>
+      <Footer onNavigate={handleNavigate} />
+      <LoginPromptModal />
+    </div>
+  );
+}
+
+function App() {
+  return (
+    // BrowserRouter should be at the very top, typically in index.tsx or main.tsx
+    // Assuming BrowserRouter is wrapping this App component higher up.
+    <AuthProvider>
+      <LoginPromptProvider>
+        <AppContent />
+      </LoginPromptProvider>
+    </AuthProvider>
   );
 }
 

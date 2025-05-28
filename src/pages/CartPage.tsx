@@ -1,15 +1,18 @@
 // src/pages/CartPage.tsx
 import React, { useState, useEffect, useCallback } from "react";
-import { Cart } from "../types";
-import { getSupabaseCart } from "../services/cartCheckoutApis";
-import { updateSupabaseCartItemQuantity } from "../services/cartCheckoutApis";
-import { removeSupabaseCartItem } from "../services/cartCheckoutApis";
-// import { applyDiscountCode } from "../services/cartCheckoutApis";
-import { CartItemCard } from "../components/cart/CartItemCard";
-import { ShoppingBag, ChevronRight } from "lucide-react";
+import { Cart } from "../types"; //
+import {
+  getSupabaseCart,
+  updateSupabaseCartItemQuantity,
+  removeSupabaseCartItem,
+} from "../services/cartCheckoutApis"; //
+import { CartItemCard } from "../components/cart/CartItemCard"; //
+import { ShoppingBag, ChevronRight } from "lucide-react"; //
+import { useAuth } from "../contexts/AuthContext";
+import { useLoginPrompt } from "../contexts/LoginPromptContext";
 
 interface CartPageProps {
-  onNavigate?: (page: string, params?: any) => void;
+  onNavigate: (page: string, params?: any) => void;
 }
 
 export const CartPage: React.FC<CartPageProps> = ({ onNavigate }) => {
@@ -21,24 +24,53 @@ export const CartPage: React.FC<CartPageProps> = ({ onNavigate }) => {
   const [discountError, setDiscountError] = useState("");
   const [updatingItemId, setUpdatingItemId] = useState<string | null>(null);
 
+  const auth = useAuth();
+  const { showLoginPrompt } = useLoginPrompt();
+
   const fetchCartData = useCallback(async () => {
-    setIsLoading(true);
-    setError(null);
-    try {
-      const cartData = await getSupabaseCart();
-      setCart(cartData);
-    } catch (err: any) {
-      setError(err.message || "Failed to load cart.");
-    } finally {
+    if (!auth.user) {
+      setCart(null); // Clear any stale cart data
       setIsLoading(false);
+      // No error message needed here if we show a login prompt message
+      return;
     }
-  }, []);
+    setIsLoading(true); //
+    setError(null); //
+    try {
+      const cartData = await getSupabaseCart(); //
+      setCart(cartData); //
+    } catch (err: any) {
+      console.error("Failed to load cart", err);
+      if (err.message.includes("User not authenticated")) {
+        auth.signOut(); // Session might be invalid
+        showLoginPrompt({ returnUrl: "/cart" });
+      } else {
+        setError(err.message || "Failed to load cart."); //
+      }
+    } finally {
+      setIsLoading(false); //
+    }
+  }, [auth.user, auth.signOut, showLoginPrompt]); //
 
   useEffect(() => {
+    if (auth.loading) {
+      // Wait for auth state to be determined
+      setIsLoading(true);
+      return;
+    }
     fetchCartData();
-  }, [fetchCartData]);
+  }, [auth.loading, fetchCartData]); //
 
-  const handleUpdateQuantity = async (productId: string, quantity: number, size?: string, color?: string) => {
+  const handleUpdateQuantity = async (
+    productId: string,
+    quantity: number,
+    size?: string,
+    color?: string
+  ) => {
+    if (!auth.user) {
+      showLoginPrompt({ returnUrl: "/cart" });
+      return;
+    }
     const itemId = `${productId}_${size || "any"}_${color || "any"}`;
     setUpdatingItemId(itemId);
     try {
@@ -50,7 +82,12 @@ export const CartPage: React.FC<CartPageProps> = ({ onNavigate }) => {
       setUpdatingItemId(null);
     }
   };
+
   const handleRemoveItem = async (productId: string, size?: string, color?: string) => {
+    if (!auth.user) {
+      showLoginPrompt({ returnUrl: "/cart" });
+      return;
+    }
     const itemId = `${productId}_${size || "any"}_${color || "any"}`;
     setUpdatingItemId(itemId);
     try {
@@ -78,21 +115,49 @@ export const CartPage: React.FC<CartPageProps> = ({ onNavigate }) => {
     }
   };
 
-  if (isLoading)
+  if (isLoading || auth.loading)
     return (
       <div className="min-h-[calc(100vh-200px)] flex items-center justify-center bg-stone-50">
         <p>Loading your cart...</p>
       </div>
     );
-  if (error) return <div className="min-h-[calc(100vh-200px)] flex items-center justify-center bg-stone-50 p-4 text-red-600">Error: {error}</div>;
+
+  if (!auth.user) {
+    // User is not logged in, and auth state is determined
+    return (
+      <div className="min-h-[calc(100vh-200px)] flex flex-col items-center justify-center bg-stone-50 p-8 text-center">
+        <ShoppingBag size={64} className="text-slate-300 mb-6" /> {/* */}
+        <h1 className="text-2xl font-semibold text-slate-700 mb-3">Want to See Your Cart?</h1>{" "}
+        {/* */}
+        <p className="text-slate-500 mb-6">
+          Log in to view items you've added and proceed to checkout.
+        </p>{" "}
+        {/* */}
+        <button
+          onClick={() => showLoginPrompt({ returnUrl: "/cart" })}
+          className="bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-8 rounded-md transition-colors"
+        >
+          Log In / Sign Up
+        </button>
+      </div>
+    );
+  }
+  if (error)
+    return (
+      <div className="min-h-[calc(100vh-200px)] flex items-center justify-center bg-stone-50 p-4 text-red-600">
+        Error: {error}
+      </div>
+    );
   if (!cart || cart.items.length === 0) {
     return (
       <div className="min-h-[calc(100vh-200px)] flex flex-col items-center justify-center bg-stone-50 p-8 text-center">
         <ShoppingBag size={64} className="text-slate-300 mb-6" />
         <h1 className="text-2xl font-semibold text-slate-700 mb-3">Your Cart is Empty</h1>
-        <p className="text-slate-500 mb-6">Looks like you haven't added anything to your cart yet.</p>
+        <p className="text-slate-500 mb-6">
+          Looks like you haven't added anything to your cart yet.
+        </p>
         <button
-          onClick={() => onNavigate?.("products")}
+          onClick={() => onNavigate("products")}
           className="bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-8 rounded-md transition-colors"
         >
           Start Shopping
@@ -103,7 +168,9 @@ export const CartPage: React.FC<CartPageProps> = ({ onNavigate }) => {
   return (
     <div className="bg-stone-50 py-8 min-h-[calc(100vh-200px)]">
       <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        <h1 className="text-3xl font-bold text-slate-800 mb-8 text-center sm:text-left">Your Shopping Cart</h1>
+        <h1 className="text-3xl font-bold text-slate-800 mb-8 text-center sm:text-left">
+          Your Shopping Cart
+        </h1>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-start">
           <div className="md:col-span-2 bg-white p-0 sm:p-6 rounded-lg shadow-md border border-slate-200">
             {cart.items.map((item) => (
@@ -112,12 +179,17 @@ export const CartPage: React.FC<CartPageProps> = ({ onNavigate }) => {
                 item={item}
                 onUpdateQuantity={handleUpdateQuantity}
                 onRemoveItem={handleRemoveItem}
-                isUpdating={updatingItemId === `${item.productId}_${item.size || "any"}_${item.color || "any"}`}
+                isUpdating={
+                  updatingItemId ===
+                  `${item.productId}_${item.size || "any"}_${item.color || "any"}`
+                }
               />
             ))}
           </div>
           <aside className="md:col-span-1 bg-white p-6 rounded-lg shadow-md border border-slate-200 sticky top-24">
-            <h2 className="text-xl font-semibold text-slate-800 mb-4 border-b border-slate-200 pb-3">Order Summary</h2>
+            <h2 className="text-xl font-semibold text-slate-800 mb-4 border-b border-slate-200 pb-3">
+              Order Summary
+            </h2>
             <div className="space-y-2 text-sm mb-4">
               <div className="flex justify-between">
                 <span className="text-slate-600">Subtotal ({cart.items.length} items):</span>
@@ -132,12 +204,18 @@ export const CartPage: React.FC<CartPageProps> = ({ onNavigate }) => {
               <div className="flex justify-between">
                 <span className="text-slate-600">Shipping:</span>
                 <span className="font-medium text-slate-700">
-                  {cart.shippingCost !== undefined ? `$${cart.shippingCost.toFixed(2)}` : "Calculated at checkout"}
+                  {cart.shippingCost !== undefined
+                    ? `$${cart.shippingCost.toFixed(2)}`
+                    : "Calculated at checkout"}
                 </span>
               </div>
               <div className="flex justify-between">
                 <span className="text-slate-600">Estimated Taxes:</span>
-                <span className="font-medium text-slate-700">{cart.taxes !== undefined ? `$${cart.taxes.toFixed(2)}` : "Calculated at checkout"}</span>
+                <span className="font-medium text-slate-700">
+                  {cart.taxes !== undefined
+                    ? `$${cart.taxes.toFixed(2)}`
+                    : "Calculated at checkout"}
+                </span>
               </div>
             </div>
             <form onSubmit={handleApplyDiscount} className="mb-4 flex gap-2">
@@ -164,7 +242,7 @@ export const CartPage: React.FC<CartPageProps> = ({ onNavigate }) => {
               </div>
             </div>
             <button
-              onClick={() => onNavigate?.("checkout")}
+              onClick={() => onNavigate("checkout")}
               className="mt-6 w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-6 rounded-md transition-colors flex items-center justify-center"
             >
               Proceed to Checkout <ChevronRight size={20} className="ml-2" />

@@ -28,7 +28,7 @@ const accountTabsList: { id: AccountTabId; label: string; icon: React.ElementTyp
 ];
 export const AccountPageLayout: React.FC<AccountPageLayoutProps> = ({ activeTab, onTabChange, children, avatarUrl, userName }) => {
   return (
-    <div className="bg-stone-100 min-h-screen py-8">
+    <div className="bg-stone-100 py-8">
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="mb-8 border-b border-slate-300 bg-white shadow-sm rounded-t-lg">
           <nav className="-mb-px flex space-x-1 sm:space-x-3 overflow-x-auto px-4" aria-label="Account navigation">

@@ -1,16 +1,23 @@
 // src/pages/AuthPage.tsx
 import React, { useState, useEffect } from "react";
 import { supabase } from "../supabaseClient"; // Adjust path to your Supabase client
-import { AuthError, User } from "@supabase/supabase-js";
+import { User } from "@supabase/supabase-js";
 import { Mail, Lock, LogIn, UserPlus, KeyRound, Eye, EyeOff } from "lucide-react";
+import { useLocation } from "react-router-dom";
 
 interface AuthPageProps {
   onLoginSuccess?: (user: User) => void; // Callback for successful login
-  onNavigate?: (page: string, params?: any) => void; // For navigation to sign-up or forgot-password
+  onNavigate: (page: string, params?: any) => void; // For navigation to sign-up or forgot-password
   initialMode?: "login" | "signup"; // To set the initial view
+  isModal?: boolean; // Optional: if you need different behavior/styling in modal
 }
 
-export const AuthPage: React.FC<AuthPageProps> = ({ onLoginSuccess, onNavigate, initialMode = "login" }) => {
+export const AuthPage: React.FC<AuthPageProps> = ({
+  onLoginSuccess,
+  onNavigate,
+  initialMode = "login",
+  isModal = false,
+}) => {
   const [mode, setMode] = useState<"login" | "signup" | "forgotPassword">(initialMode);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -20,6 +27,8 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onLoginSuccess, onNavigate, 
   const [message, setMessage] = useState<string | null>(null); // For success messages (e.g., password reset email sent)
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+  const location = useLocation();
 
   useEffect(() => {
     // Clear errors/messages when mode changes
@@ -47,8 +56,10 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onLoginSuccess, onNavigate, 
       setMessage("Login successful! Redirecting...");
       if (onLoginSuccess) {
         onLoginSuccess(data.user);
-      } else {
-        onNavigate?.("landing"); // Default navigation if no specific callback
+      } else if (onNavigate) {
+        // Fallback if onLoginSuccess is not provided (e.g. direct navigation to /login)
+        const returnUrl = (location.state as { returnUrl?: string })?.returnUrl || "account";
+        onNavigate(returnUrl, { replace: true }); //
       }
     } else {
       setError("Login failed. Please check your credentials.");
@@ -80,13 +91,22 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onLoginSuccess, onNavigate, 
     } else if (data.session === null && data.user?.identities?.length === 0) {
       // This case can happen if email confirmation is required but the user already exists without being confirmed.
       // Supabase might return a user object but no session.
-      setError("This email address is already registered but not confirmed. Please check your email or try logging in.");
+      setError(
+        "This email address is already registered but not confirmed. Please check your email or try logging in."
+      );
     } else if (data.user) {
       if (data.session) {
         // User logged in directly (e.g. email confirmation disabled)
         setMessage("Sign up successful! Redirecting...");
         if (onLoginSuccess) onLoginSuccess(data.user);
-        else onNavigate?.("landing");
+        else if (onNavigate) onNavigate("landing");
+        else {
+          setMessage("Sign up successful! Please check your email to confirm your account."); //
+          if (isModal && !onLoginSuccess) {
+            // If in modal and no specific success handler, maybe navigate to a general page
+            // or rely on message. The modal should ideally be closed by parent.
+          }
+        }
       } else {
         // Email confirmation required
         setMessage("Sign up successful! Please check your email to confirm your account.");
@@ -124,7 +144,10 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onLoginSuccess, onNavigate, 
               Email address
             </label>
             <div className="relative">
-              <Mail size={18} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400" />
+              <Mail
+                size={18}
+                className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400"
+              />
               <input
                 id="email-reset"
                 name="email"
@@ -153,7 +176,10 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onLoginSuccess, onNavigate, 
             Email address
           </label>
           <div className="relative">
-            <Mail size={18} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400" />
+            <Mail
+              size={18}
+              className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400"
+            />
             <input
               id="email"
               name="email"
@@ -171,7 +197,10 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onLoginSuccess, onNavigate, 
             Password
           </label>
           <div className="relative">
-            <Lock size={18} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400" />
+            <Lock
+              size={18}
+              className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400"
+            />
             <input
               id="password_auth"
               name="password"
@@ -193,11 +222,17 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onLoginSuccess, onNavigate, 
         </div>
         {mode === "signup" && (
           <div>
-            <label htmlFor="confirm-password" className="block text-sm font-medium text-slate-700 mb-1">
+            <label
+              htmlFor="confirm-password"
+              className="block text-sm font-medium text-slate-700 mb-1"
+            >
               Confirm Password
             </label>
             <div className="relative">
-              <Lock size={18} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400" />
+              <Lock
+                size={18}
+                className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400"
+              />
               <input
                 id="confirm-password"
                 name="confirmPassword"
@@ -244,7 +279,9 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onLoginSuccess, onNavigate, 
       <div className="max-w-md w-full space-y-8 bg-white p-8 sm:p-10 rounded-xl shadow-2xl">
         <div>
           <IconComponent size={48} className="mx-auto text-green-600 mb-4" />
-          <h2 className="text-center text-2xl sm:text-3xl font-extrabold text-slate-900">{titleText}</h2>
+          <h2 className="text-center text-2xl sm:text-3xl font-extrabold text-slate-900">
+            {titleText}
+          </h2>
         </div>
 
         {/* Tabs for Login/Signup (only if not in forgotPassword mode) */}
@@ -253,14 +290,22 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onLoginSuccess, onNavigate, 
             <button
               onClick={() => setMode("login")}
               className={`flex-1 py-3 text-center font-medium text-sm transition-all duration-300 ease-in-out
-                ${mode === "login" ? "border-b-2 border-green-600 text-green-700" : "text-slate-500 hover:text-slate-700"}`}
+                ${
+                  mode === "login"
+                    ? "border-b-2 border-green-600 text-green-700"
+                    : "text-slate-500 hover:text-slate-700"
+                }`}
             >
               Sign In
             </button>
             <button
               onClick={() => setMode("signup")}
               className={`flex-1 py-3 text-center font-medium text-sm transition-all duration-300 ease-in-out
-                ${mode === "signup" ? "border-b-2 border-green-600 text-green-700" : "text-slate-500 hover:text-slate-700"}`}
+                ${
+                  mode === "signup"
+                    ? "border-b-2 border-green-600 text-green-700"
+                    : "text-slate-500 hover:text-slate-700"
+                }`}
             >
               Sign Up
             </button>
@@ -287,8 +332,16 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onLoginSuccess, onNavigate, 
             </div>
           )}
 
-          {error && <p className="text-sm text-red-600 bg-red-50 p-3 rounded-md border border-red-200">{error}</p>}
-          {message && <p className="text-sm text-green-700 bg-green-50 p-3 rounded-md border border-green-200">{message}</p>}
+          {error && (
+            <p className="text-sm text-red-600 bg-red-50 p-3 rounded-md border border-red-200">
+              {error}
+            </p>
+          )}
+          {message && (
+            <p className="text-sm text-green-700 bg-green-50 p-3 rounded-md border border-green-200">
+              {message}
+            </p>
+          )}
 
           <div>
             <button
@@ -296,7 +349,11 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onLoginSuccess, onNavigate, 
               disabled={loading}
               className="w-full flex items-center justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors duration-150 disabled:opacity-70"
             >
-              {loading ? <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div> : buttonText}
+              {loading ? (
+                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+              ) : (
+                buttonText
+              )}
             </button>
           </div>
           {mode === "forgotPassword" && (

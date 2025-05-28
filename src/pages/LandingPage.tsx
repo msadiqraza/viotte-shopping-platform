@@ -78,7 +78,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
               <h3 className="text-lg font-semibold text-orange-700 mb-2">Partner with Us</h3>
               <p className="text-sm text-orange-600 mb-3">Opportunities for partners and affiliates.</p>
               <button
-                onClick={() => onNavigate?.("partner-program")}
+                onClick={() => onNavigate("partner-program")}
                 className="bg-orange-500 hover:bg-orange-600 text-white text-sm font-medium py-2 px-4 rounded-md transition-colors"
               >
                 Learn More

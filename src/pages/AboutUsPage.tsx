@@ -1,6 +1,16 @@
 // src/pages/AboutUsPage.tsx
 import React, { useState } from "react";
-import { MapPin, Phone, Mail as MailIcon, Send, Building2, Users, Target, Lightbulb, CheckCircle } from "lucide-react";
+import {
+  MapPin,
+  Phone,
+  Mail as MailIcon,
+  Send,
+  Building2,
+  Users,
+  Target,
+  Lightbulb,
+  CheckCircle,
+} from "lucide-react";
 // Assume a mock service function for contact form submission
 // import { sendContactMessage } from '../services/api'; // You would create this in project_services_v1
 // Assume ContactFormData type
@@ -15,14 +25,19 @@ interface ContactFormData {
 }
 
 // Placeholder for sendContactMessage (add to src/services/api.ts)
-const sendContactMessage = async (formData: ContactFormData): Promise<{ success: boolean; message: string }> => {
+const sendContactMessage = async (
+  formData: ContactFormData
+): Promise<{ success: boolean; message: string }> => {
   console.log("Contact form submitted (mock):", formData);
   // Simulate API call
   return new Promise((resolve) =>
     setTimeout(() => {
       if (formData.email.includes("@")) {
         // Simple validation
-        resolve({ success: true, message: "Thank you for your message! We'll get back to you soon." });
+        resolve({
+          success: true,
+          message: "Thank you for your message! We'll get back to you soon.",
+        });
       } else {
         resolve({ success: false, message: "Failed to send message. Please try again." });
       }
@@ -30,9 +45,19 @@ const sendContactMessage = async (formData: ContactFormData): Promise<{ success:
   );
 };
 
-export const AboutUsPage: React.FC<{ onNavigate?: (page: string, params?: any) => void }> = ({ onNavigate }) => {
-  const [formData, setFormData] = useState<ContactFormData>({ name: "", email: "", subject: "", message: "" });
-  const [formStatus, setFormStatus] = useState<{ type: "success" | "error" | "idle"; message: string }>({ type: "idle", message: "" });
+export const AboutUsPage: React.FC<{ onNavigate: (page: string, params?: any) => void }> = ({
+  onNavigate,
+}) => {
+  const [formData, setFormData] = useState<ContactFormData>({
+    name: "",
+    email: "",
+    subject: "",
+    message: "",
+  });
+  const [formStatus, setFormStatus] = useState<{
+    type: "success" | "error" | "idle";
+    message: string;
+  }>({ type: "idle", message: "" });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -64,9 +89,10 @@ export const AboutUsPage: React.FC<{ onNavigate?: (page: string, params?: any) =
       <section className="bg-gradient-to-r from-green-600 to-emerald-600 text-white py-20 sm:py-28">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <Building2 size={64} className="mx-auto mb-6 opacity-80" />
-          <h1 className="text-4xl sm:text-5xl font-extrabold mb-4">About YourStore</h1>
+          <h1 className="text-4xl sm:text-5xl font-extrabold mb-4">About viotte</h1>
           <p className="text-lg sm:text-xl opacity-90 leading-relaxed">
-            Discover who we are, our mission, and the values that drive our passion for delivering the best to you.
+            Discover who we are, our mission, and the values that drive our passion for delivering
+            the best to you.
           </p>
         </div>
       </section>
@@ -80,16 +106,21 @@ export const AboutUsPage: React.FC<{ onNavigate?: (page: string, params?: any) =
                 <Lightbulb size={32} className="mr-3 text-green-600" /> Our Journey
               </h2>
               <p className="text-slate-600 mb-4 leading-relaxed">
-                Founded with a vision to redefine the online shopping experience, YourStore began as a small idea fueled by a passion for quality and customer
-                satisfaction. We envisioned a place where customers could not only find exceptional products but also feel a genuine connection to the brand.
+                Founded with a vision to redefine the online shopping experience, viotte began as a
+                small idea fueled by a passion for quality and customer satisfaction. We envisioned
+                a place where customers could not only find exceptional products but also feel a
+                genuine connection to the brand.
               </p>
               <p className="text-slate-600 mb-4 leading-relaxed">
-                Over the years, through dedication and the unwavering support of our valued customers, we've grown from a humble beginning into a trusted online
-                destination. Our journey has been one of constant learning, innovation, and a relentless pursuit of excellence in everything we do.
+                Over the years, through dedication and the unwavering support of our valued
+                customers, we've grown from a humble beginning into a trusted online destination.
+                Our journey has been one of constant learning, innovation, and a relentless pursuit
+                of excellence in everything we do.
               </p>
               <p className="text-slate-600 leading-relaxed">
-                We believe that shopping should be more than just a transaction; it should be an experience. That's why we meticulously curate our collections
-                and strive to provide a seamless, enjoyable, and secure platform for you.
+                We believe that shopping should be more than just a transaction; it should be an
+                experience. That's why we meticulously curate our collections and strive to provide
+                a seamless, enjoyable, and secure platform for you.
               </p>
             </div>
             <div className="order-1 md:order-2">
@@ -108,31 +139,34 @@ export const AboutUsPage: React.FC<{ onNavigate?: (page: string, params?: any) =
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-3xl font-bold text-slate-800">Our Mission & Core Values</h2>
-            <p className="mt-3 text-lg text-slate-600 max-w-2xl mx-auto">The principles that guide every decision we make and action we take.</p>
+            <p className="mt-3 text-lg text-slate-600 max-w-2xl mx-auto">
+              The principles that guide every decision we make and action we take.
+            </p>
           </div>
           <div className="grid md:grid-cols-3 gap-8">
             <div className="bg-white p-8 rounded-lg shadow-lg text-center transform hover:scale-105 transition-transform duration-300">
               <Target size={40} className="mx-auto mb-5 text-green-600" />
               <h3 className="text-xl font-semibold text-slate-800 mb-2">Our Mission</h3>
               <p className="text-slate-600 text-sm leading-relaxed">
-                To provide an unparalleled online shopping experience by offering a diverse range of high-quality products, exceptional customer service, and a
-                commitment to integrity and innovation.
+                To provide an unparalleled online shopping experience by offering a diverse range of
+                high-quality products, exceptional customer service, and a commitment to integrity
+                and innovation.
               </p>
             </div>
             <div className="bg-white p-8 rounded-lg shadow-lg text-center transform hover:scale-105 transition-transform duration-300">
               <Users size={40} className="mx-auto mb-5 text-green-600" />
               <h3 className="text-xl font-semibold text-slate-800 mb-2">Customer First</h3>
               <p className="text-slate-600 text-sm leading-relaxed">
-                Our customers are at the heart of everything. We listen, adapt, and strive to exceed expectations, ensuring satisfaction and building lasting
-                relationships.
+                Our customers are at the heart of everything. We listen, adapt, and strive to exceed
+                expectations, ensuring satisfaction and building lasting relationships.
               </p>
             </div>
             <div className="bg-white p-8 rounded-lg shadow-lg text-center transform hover:scale-105 transition-transform duration-300">
               <CheckCircle size={40} className="mx-auto mb-5 text-green-600" />
               <h3 className="text-xl font-semibold text-slate-800 mb-2">Quality & Integrity</h3>
               <p className="text-slate-600 text-sm leading-relaxed">
-                We are dedicated to offering products that meet the highest standards of quality and conducting our business with transparency, honesty, and
-                ethical practices.
+                We are dedicated to offering products that meet the highest standards of quality and
+                conducting our business with transparency, honesty, and ethical practices.
               </p>
             </div>
           </div>
@@ -146,7 +180,8 @@ export const AboutUsPage: React.FC<{ onNavigate?: (page: string, params?: any) =
             <MailIcon size={48} className="mx-auto mb-4 text-green-600" />
             <h2 className="text-3xl font-bold text-slate-800">Get In Touch</h2>
             <p className="mt-3 text-lg text-slate-600 max-w-2xl mx-auto">
-              We'd love to hear from you! Whether you have a question, feedback, or just want to say hello, please don't hesitate to reach out.
+              We'd love to hear from you! Whether you have a question, feedback, or just want to say
+              hello, please don't hesitate to reach out.
             </p>
           </div>
 
@@ -184,7 +219,10 @@ export const AboutUsPage: React.FC<{ onNavigate?: (page: string, params?: any) =
                   />
                 </div>
                 <div>
-                  <label htmlFor="subject" className="block text-sm font-medium text-slate-700 mb-1">
+                  <label
+                    htmlFor="subject"
+                    className="block text-sm font-medium text-slate-700 mb-1"
+                  >
                     Subject
                   </label>
                   <input
@@ -198,7 +236,10 @@ export const AboutUsPage: React.FC<{ onNavigate?: (page: string, params?: any) =
                   />
                 </div>
                 <div>
-                  <label htmlFor="message" className="block text-sm font-medium text-slate-700 mb-1">
+                  <label
+                    htmlFor="message"
+                    className="block text-sm font-medium text-slate-700 mb-1"
+                  >
                     Message
                   </label>
                   <textarea
@@ -230,7 +271,8 @@ export const AboutUsPage: React.FC<{ onNavigate?: (page: string, params?: any) =
                     disabled={isSubmitting}
                     className="w-full flex items-center justify-center py-3 px-6 bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-md shadow-md transition-colors duration-150 disabled:opacity-70"
                   >
-                    <Send size={18} className="mr-2" /> {isSubmitting ? "Sending..." : "Send Message"}
+                    <Send size={18} className="mr-2" />{" "}
+                    {isSubmitting ? "Sending..." : "Send Message"}
                   </button>
                 </div>
               </form>
@@ -245,7 +287,7 @@ export const AboutUsPage: React.FC<{ onNavigate?: (page: string, params?: any) =
                     <MapPin size={24} className="flex-shrink-0 mr-3 mt-1 text-green-600" />
                     <div>
                       <h4 className="font-medium">Our Office</h4>
-                      <p className="text-sm">123 YourStore Street, Wah, Punjab, Pakistan</p>
+                      <p className="text-sm">123 viotte Street, Wah, Punjab, Pakistan</p>
                       <p className="text-sm">(This is a placeholder address)</p>
                     </div>
                   </div>
@@ -263,7 +305,7 @@ export const AboutUsPage: React.FC<{ onNavigate?: (page: string, params?: any) =
                     <div>
                       <h4 className="font-medium">Email Us</h4>
                       <p className="text-sm hover:text-green-700">
-                        <a href="mailto:support@yourstore.site">support@yourstore.site</a>
+                        <a href="mailto:support@viotte.site">support@viotte.site</a>
                       </p>
                     </div>
                   </div>

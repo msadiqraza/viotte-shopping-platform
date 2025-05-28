@@ -5,10 +5,10 @@ import { Star, Minus, Plus, MessageSquare, Heart as HeartIcon, ShoppingCart as C
 
 interface ProductInfoProps {
   product: Product;
-  onAddToCart: (productId: string, quantity: number) => void;
+  onAddToCart: (productId: string, quantity: number, price: number, name?: string, imageUrl?: string, size?: string, color?: string) => void;
   onBuyNow: (productId: string, quantity: number) => void;
   onWishlist: (productId: string) => void;
-  onNavigate?: (page: string, params?: any) => void;
+  onNavigate: (page: string, params?: any) => void;
 }
 export const ProductInfo: React.FC<ProductInfoProps> = ({ product, onAddToCart, onBuyNow, onWishlist, onNavigate }) => {
   const [quantity, setQuantity] = useState(1);
@@ -17,7 +17,7 @@ export const ProductInfo: React.FC<ProductInfoProps> = ({ product, onAddToCart, 
   const handleQuantityChange = (amount: number) => setQuantity((prev) => Math.max(1, Math.min(prev + amount, product.stock || 99)));
   const handleVisitStore = (e: React.MouseEvent) => {
     e.preventDefault();
-    onNavigate?.("store");
+    onNavigate("store");
   }; // Navigates to the single main store
   return (
     <div className="flex flex-col space-y-4">
@@ -97,7 +97,7 @@ export const ProductInfo: React.FC<ProductInfoProps> = ({ product, onAddToCart, 
       </div>
       <div className="flex flex-col sm:flex-row gap-3 pt-2">
         <button
-          onClick={() => onAddToCart(product.id, quantity)}
+          onClick={() => onAddToCart(product.id, quantity, product.price, product.name, product.imageUrl, selectedSize, selectedColor)}
           className="flex-1 bg-orange-400 hover:bg-orange-500 text-white font-semibold py-3 px-6 rounded-md transition-colors flex items-center justify-center text-sm"
           disabled={product.stock === 0}
         >

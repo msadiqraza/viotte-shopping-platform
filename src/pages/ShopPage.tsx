@@ -13,7 +13,7 @@ import { ShopPoliciesSection } from "../components/shop/ShopPoliciesSection";
 
 const MAIN_SHOP_PRODUCTS_PER_PAGE = 15;
 interface ShopPageProps {
-  onNavigate?: (page: string, params?: any) => void;
+  onNavigate: (page: string, params?: any) => void;
 }
 type MainShopActiveTab = "products" | "about" | "policies";
 
@@ -119,7 +119,7 @@ export const ShopPage: React.FC<ShopPageProps> = ({ onNavigate }) => {
       <div className="min-h-screen flex flex-col items-center justify-center bg-stone-50 p-4 text-center">
         <h2 className="text-2xl font-semibold text-red-600 mb-4">Error Loading Store</h2>
         <p className="text-slate-600 mb-4">{error}</p>
-        <button onClick={() => onNavigate?.("landing")} className="bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700">
+        <button onClick={() => onNavigate("landing")} className="bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700">
           Go to Homepage
         </button>
       </div>

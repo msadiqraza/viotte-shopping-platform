@@ -16,7 +16,7 @@ export interface Product {
   seller?: {
     // Will refer to the main shop
     id: string; // Main shop's ID (e.g., "main-store-id")
-    name: string; // Main shop's name (e.g., "YourStore")
+    name: string; // Main shop's name (e.g., "viotte")
   };
   sizes?: string[]; // Available sizes
   colors?: { name: string; hex: string }[]; // Available colors
@@ -35,7 +35,7 @@ export interface Product {
 export interface Shop {
   // Represents the single main store
   id: string; // e.g., "main-store-id"
-  name: string; // e.g., "YourStore"
+  name: string; // e.g., "viotte"
   slug: string; // e.g., "main-store" (for the URL, if desired)
   avatarUrl: string;
   bannerUrl: string;
@@ -106,12 +106,12 @@ export interface BlogPost {
 // --- ACCOUNT PAGE TYPES ---
 export interface UserAccountDetails {
   id: string;
-  firstName: string;
-  lastName: string;
+  first_name: string;
+  last_name: string;
   email: string;
-  phoneNumber?: string;
+  phone_number?: string;
   gender?: "Male" | "Female" | "Other" | "Prefer not to say";
-  avatarUrl?: string;
+  avatar_url?: string;
 }
 
 export type CollectionItem = Product;
@@ -153,7 +153,14 @@ export interface Order {
   orderNumber: string;
   userId?: string;
   datePlaced: string;
-  status: "Pending" | "Processing" | "Shipped" | "Delivered" | "Cancelled" | "Returned" | "PaymentFailed";
+  status:
+    | "Pending"
+    | "Processing"
+    | "Shipped"
+    | "Delivered"
+    | "Cancelled"
+    | "Returned"
+    | "PaymentFailed";
   items: OrderItem[];
   subtotal: number;
   discountAmount?: number;
@@ -220,17 +227,28 @@ export interface CartItemCardProps {
 
 export interface PersonalInfoSectionProps {
   userDetails: UserAccountDetails | null;
-  onUpdateDetails: (details: Partial<UserAccountDetails>) => Promise<{ success: boolean; updatedDetails?: UserAccountDetails }>;
+  onUpdateDetails: (
+    details: Partial<UserAccountDetails>
+  ) => Promise<{ success: boolean; updatedDetails?: UserAccountDetails }>;
   isLoading: boolean;
 }
 
 export interface CollectionSectionProps {
-  onNavigate?: (page: string, params?: any) => void;
+  onNavigate: (page: string, params?: any) => void;
 }
 
-export type AccountTabId = "personal-info" | "collection" | "orders" | "addresses" | "payment-methods";
+export type AccountTabId =
+  | "personal-info"
+  | "collection"
+  | "orders"
+  | "addresses"
+  | "payment-methods";
 
 export interface AccountPageProps {
   initialTab?: AccountTabId;
-  onNavigate?: (page: string, params?: any) => void;
+  onNavigate: (page: string, params?: any) => void;
+}
+
+export interface NavbarProps {
+  onNavigate: (page: string, params?: any) => void;
 }

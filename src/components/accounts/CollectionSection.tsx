@@ -95,7 +95,7 @@ export const CollectionSection: React.FC<CollectionSectionProps> = ({ onNavigate
           <p className="text-slate-500 text-lg">Your collection is empty.</p>
           <p className="text-sm text-slate-400 mt-1">Start adding your favorite products to see them here!</p>
           <button
-            onClick={() => onNavigate?.("products")}
+            onClick={() => onNavigate("products")}
             className="mt-6 bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-6 rounded-md transition-colors"
           >
             Browse Products

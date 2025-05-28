@@ -8,7 +8,7 @@ export const getProducts = async (params: GetProductsParams): Promise<PaginatedR
   const limit = params.limit || ITEMS_PER_PAGE_DEFAULT;
   const offset = (page - 1) * limit;
 
-  console.log("params", params);
+  console.log("Get Products...")
   let query = supabase
     .from("products")
     .select(
@@ -83,6 +83,7 @@ export const getNewArrivalProductsList = (limit: number = 10): Promise<Product[]
 export const getShopPreviewProductsList = (shopId: string, limit: number = 10): Promise<Product[]> => getProducts({ shopId, limit }).then((res) => res.items);
 
 export const getProductById = async (productId: string): Promise<Product | null> => {
+  console.log("Get Product by ID...");
   const { data, error } = await supabase
     .from("products")
     .select(

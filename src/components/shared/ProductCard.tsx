@@ -5,7 +5,7 @@ import { Star, ShoppingCart as CartIcon } from "lucide-react";
 
 interface ProductCardProps {
   product: Product;
-  onNavigate?: (page: string, params?: any) => void;
+  onNavigate: (page: string, params?: any) => void;
 }
 
 export const ProductCard: React.FC<ProductCardProps> = ({ product, onNavigate }) => {
@@ -18,7 +18,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onNavigate })
   };
   const handleProductClick = (e: React.MouseEvent) => {
     e.preventDefault();
-    onNavigate?.("product", { id: product.id });
+    onNavigate("product", { id: product.id });
   };
   return (
     <div className="bg-white rounded-lg shadow-md overflow-hidden flex flex-col group transition-all duration-300 hover:shadow-xl h-full">

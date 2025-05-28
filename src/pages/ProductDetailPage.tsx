@@ -12,6 +12,13 @@ import { SellerPolicies } from "../components/product/SellerPolicies";
 import { CustomerReviews } from "../components/product/CustomerReviews";
 import { ProductCarousel as SimilarProductCarousel } from "../components/shared/ProductCarousel"; // Updated path
 import { CollectionSectionProps as ProductDetailPageProps } from "../types";
+import { useAuth } from "../contexts/AuthContext";
+import { useLoginPrompt } from "../contexts/LoginPromptContext";
+import { addSupabaseItemToCart } from "../services/cartCheckoutApis"; // Assuming you have this
+import {
+  addToCollection as addToWishlistService,
+  removeFromCollection as removeFromWishlistService,
+} from "../services/accountApis"; // Assuming
 
 export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({ onNavigate }) => {
   let { id } = useParams();
@@ -20,6 +27,9 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({ onNavigate
   const [similarProducts, setSimilarProducts] = useState<ProductDetailType[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  const auth = useAuth();
+  const { showLoginPrompt } = useLoginPrompt();
 
   id = id || "";
 
@@ -34,7 +44,10 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({ onNavigate
         if (productData) {
           // Ensure productData is not null before using its properties
           addProductToRecentlyViewed(id); // Add to recently viewed
-          const [reviewsData, similarData] = await Promise.all([getProductReviews(id), getSimilarProducts(id, productData.category)]);
+          const [reviewsData, similarData] = await Promise.all([
+            getProductReviews(id),
+            getSimilarProducts(id, productData.category),
+          ]);
           setReviews(reviewsData);
           setSimilarProducts(similarData);
         } else {
@@ -54,17 +67,66 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({ onNavigate
     }
   }, [id]);
 
-  const handleAddToCart = (prodId: string, quantity: number) => {
-    console.log(`Add to cart: ${prodId}, Qty: ${quantity}`);
-    alert(`${product?.name} (Qty: ${quantity}) added to cart! (UI Only)`);
+  const handleAddToCart = async (
+    prodId: string,
+    quantity: number,
+    price: number,
+    name?: string,
+    imageUrl?: string,
+    size?: string,
+    color?: string
+  ) => {
+    if (!auth.user) {
+      showLoginPrompt({ returnUrl: `/product/${prodId}` });
+      return;
+    }
+    try {
+      // Assuming addSupabaseItemToCart exists and is properly defined
+      await addSupabaseItemToCart({
+        productId: prodId,
+        quantity,
+        price,
+        name,
+        imageUrl,
+        size,
+        color,
+      });
+      alert(`${product?.name} (Qty: ${quantity}) added to cart!`);
+      // Optionally navigate to cart or show a success toast
+      onNavigate("cart");
+    } catch (error) {
+      console.error("Failed to add to cart:", error);
+      alert("Could not add item to cart. Please try again.");
+    }
   };
+
   const handleBuyNow = (prodId: string, quantity: number) => {
-    console.log(`Buy now: ${prodId}, Qty: ${quantity}`);
-    onNavigate?.("checkout", { productId: prodId, quantity });
+    //
+    if (!auth.user) {
+      showLoginPrompt({ returnUrl: `/product/${prodId}` }); // Could pass query params for checkout intent
+      return;
+    }
+    // Add to cart first, then navigate to checkout
+    // This logic might need to be more robust (e.g. ensure item is in cart before navigating)
+    console.log(`Buy now: ${prodId}, Qty: ${quantity}`); //
+    // await handleAddToCart(prodId, quantity, product.price, product.name, product.imageUrl, selectedSize, selectedColor); // Example
+    onNavigate("checkout", { productId: prodId, quantity }); //
   };
-  const handleWishlist = (prodId: string) => {
-    console.log(`Add to wishlist: ${prodId}`);
-    alert(`${product?.name} added to wishlist! (UI Only)`);
+
+  const handleWishlist = async (prodId: string) => {
+    //
+    if (!auth.user) {
+      showLoginPrompt({ returnUrl: `/product/${prodId}` });
+      return;
+    }
+    try {
+      // You'd typically check if it's already in wishlist to toggle
+      await addToWishlistService(prodId);
+      alert(`${product?.name} added to wishlist!`);
+    } catch (error) {
+      console.error("Failed to add to wishlist:", error);
+      alert("Could not add item to wishlist. Please try again.");
+    }
   };
 
   if (isLoading)
@@ -79,7 +141,10 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({ onNavigate
       <div className="min-h-screen flex flex-col items-center justify-center bg-stone-50 p-4 text-center">
         <h2 className="text-2xl font-semibold text-red-600 mb-4">Error Loading Product</h2>
         <p className="text-slate-600 mb-4">{error}</p>
-        <button onClick={() => onNavigate?.("landing")} className="bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700">
+        <button
+          onClick={() => onNavigate("landing")}
+          className="bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700"
+        >
           Go to Homepage
         </button>
       </div>
@@ -95,9 +160,19 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({ onNavigate
     <div className="bg-stone-50 py-8">
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <section className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12 mb-12">
-          <ProductImageGallery mainImageUrl={product.imageUrl} thumbnailUrls={product.images} productName={product.name} />
+          <ProductImageGallery
+            mainImageUrl={product.imageUrl}
+            thumbnailUrls={product.images}
+            productName={product.name}
+          />
           <div>
-            <ProductInfo product={product} onAddToCart={handleAddToCart} onBuyNow={handleBuyNow} onWishlist={handleWishlist} onNavigate={onNavigate} />
+            <ProductInfo
+              product={product}
+              onAddToCart={handleAddToCart}
+              onBuyNow={handleBuyNow}
+              onWishlist={handleWishlist}
+              onNavigate={onNavigate}
+            />
           </div>
         </section>
         <section className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-12">
@@ -107,17 +182,27 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({ onNavigate
               <h2 className="text-xl font-semibold text-slate-800 mb-4">Product Description</h2>
               <div
                 className="prose prose-sm max-w-none text-slate-600"
-                dangerouslySetInnerHTML={{ __html: product.description || "<p>No description available.</p>" }}
+                dangerouslySetInnerHTML={{
+                  __html: product.description || "<p>No description available.</p>",
+                }}
               ></div>
             </div>
           </div>
           <div className="lg:col-span-1">
-            <CustomerReviews reviews={reviews} averageRating={product.rating} totalReviews={product.reviewCount || reviews.length} />
+            <CustomerReviews
+              reviews={reviews}
+              averageRating={product.rating}
+              totalReviews={product.reviewCount || reviews.length}
+            />
           </div>
         </section>
         {similarProducts.length > 0 && (
           <section className="mb-12">
-            <SimilarProductCarousel title="Similar Products" products={similarProducts} onNavigate={onNavigate} />
+            <SimilarProductCarousel
+              title="Similar Products"
+              products={similarProducts}
+              onNavigate={onNavigate}
+            />
           </section>
         )}
       </main>

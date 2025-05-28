@@ -6,7 +6,7 @@ import { ProductCarousel } from "../shared/ProductCarousel";
 
 const MAX_RECENTLY_VIEWED_DISPLAY_LANDING = 5;
 interface RecentlyViewedSectionProps {
-  onNavigate?: (page: string, params?: any) => void;
+  onNavigate: (page: string, params?: any) => void;
 }
 export const RecentlyViewedSection: React.FC<RecentlyViewedSectionProps> = ({ onNavigate }) => {
   const [recentlyViewedProducts, setRecentlyViewedProducts] = useState<Product[]>([]);

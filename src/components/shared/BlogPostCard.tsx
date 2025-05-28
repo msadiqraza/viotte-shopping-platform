@@ -5,12 +5,12 @@ import { ArrowRight } from "lucide-react";
 
 interface BlogPostCardProps {
   post: BlogPost;
-  onNavigate?: (page: string, params?: any) => void;
+  onNavigate: (page: string, params?: any) => void;
 }
 export const BlogPostCard: React.FC<BlogPostCardProps> = ({ post, onNavigate }) => {
   const handleBlogClick = (e: React.MouseEvent) => {
     e.preventDefault();
-    onNavigate?.("blog-post", { slug: post.slug });
+    onNavigate("blog-post", { slug: post.slug });
   };
   return (
     <div className="bg-white rounded-lg shadow-md overflow-hidden flex flex-col group transition-all duration-300 hover:shadow-xl h-full">

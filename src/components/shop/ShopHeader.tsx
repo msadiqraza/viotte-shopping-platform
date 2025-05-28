@@ -6,7 +6,7 @@ import { followMainStore } from "../../services/shopApis"; // Adjust path
 
 interface ShopHeaderProps {
   shop: Shop;
-  onNavigate?: (page: string, params?: any) => void;
+  onNavigate: (page: string, params?: any) => void;
 }
 export const ShopHeader: React.FC<ShopHeaderProps> = ({ shop, onNavigate }) => {
   const [isFollowed, setIsFollowed] = useState(false);
@@ -72,7 +72,7 @@ export const ShopHeader: React.FC<ShopHeaderProps> = ({ shop, onNavigate }) => {
               {isFollowed ? "Following" : "Follow Us"}
             </button>
             <button
-              onClick={() => onNavigate?.("contact")}
+              onClick={() => onNavigate("contact")}
               className="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-md text-sm font-medium transition-colors flex items-center whitespace-nowrap"
             >
               <MessageCircle size={16} className="mr-1.5" /> Contact Us
