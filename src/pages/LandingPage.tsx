@@ -1,6 +1,6 @@
 // src/pages/LandingPage.tsx
 import React, { useState, useEffect } from "react";
-import { Product, CarouselItem as HeroItemType, CollectionSectionProps as LandingPageProps } from "../types";
+import { Product, CarouselItem as HeroItemType, LandingPageProps } from "../types";
 import { getCarouselItems } from "../services/utilityApis";
 import { getFeaturedProductsList } from "../services/productApis";
 import { getNewArrivalProductsList } from "../services/productApis";
@@ -8,17 +8,23 @@ import { getShopPreviewProductsList } from "../services/productApis";
 // import { getLatestBlogPosts } from "../services/blogPostApis";
 import { HeroCarousel } from "../components/landing/HeroCarousel";
 import { ProductCarousel } from "../components/shared/ProductCarousel";
-// import { BlogPreview } from "../components/landing/Blo`gPreview";
+import { BlogPreview } from "../components/landing/BlogPreview";
 import { RecentlyViewedSection } from "../components/landing/RecentlyViewedSection";
+// import { BlogPost } from "../types";
 
-
-export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
+export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate, onAddToCart, posts }) => {
   const [heroItems, setHeroItems] = useState<HeroItemType[]>([]);
   const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]);
   const [newArrivals, setNewArrivals] = useState<Product[]>([]);
   const [shopLoopProducts, setShopLoopProducts] = useState<Product[]>([]);
   // const [latestPosts, setLatestPosts] = useState<BlogPost[]>([]);
-  const [loadingStates, setLoadingStates] = useState({ hero: true, featured: true, newArrivals: true, shopLoop: true, blog: true });
+  const [loadingStates, setLoadingStates] = useState({
+    hero: true,
+    featured: true,
+    newArrivals: true,
+    shopLoop: true,
+    blog: true,
+  });
 
   useEffect(() => {
     const fetchAllData = async () => {
@@ -44,7 +50,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
         setLoadingStates((prev) => ({ ...prev, newArrivals: false }));
       }
       try {
-        setShopLoopProducts(await getShopPreviewProductsList("a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11"));
+        setShopLoopProducts(
+          await getShopPreviewProductsList("a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11")
+        );
       } catch (e) {
         console.error("Shop Loop fetch failed", e);
       } finally {
@@ -106,12 +114,18 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
             title="Featured Products"
             products={featuredProducts}
             onNavigate={onNavigate}
+            onAddToCart={onAddToCart}
           />
         )}
         {loadingStates.newArrivals ? (
           <div className="h-80 bg-slate-200 rounded-lg animate-pulse"></div>
         ) : (
-          <ProductCarousel title="New Arrivals" products={newArrivals} onNavigate={onNavigate} />
+          <ProductCarousel
+            title="New Arrivals"
+            products={newArrivals}
+            onNavigate={onNavigate}
+            onAddToCart={onAddToCart}
+          />
         )}
         {loadingStates.shopLoop ? (
           <div className="h-80 bg-slate-200 rounded-lg animate-pulse"></div>
@@ -119,11 +133,12 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
           <ProductCarousel
             title="Shop Our Collection"
             products={shopLoopProducts}
+            onAddToCart={onAddToCart}
             onNavigate={onNavigate}
           />
         )}
-        {/* {loadingStates.blog ? <div className="h-96 bg-slate-200 rounded-lg animate-pulse"></div> : <BlogPreview posts={latestPosts} onNavigate={onNavigate} />} */}
-        <RecentlyViewedSection onNavigate={onNavigate} />
+        <BlogPreview posts={posts} onNavigate={onNavigate} />
+        <RecentlyViewedSection onNavigate={onNavigate} onAddToCart={onAddToCart} />
       </main>
     </div>
   );

@@ -32,6 +32,32 @@ export interface Product {
   };
 }
 
+export interface ContactFormData {
+  name: string;
+  email: string;
+  subject: string;
+  message: string;
+}
+
+export interface Address {
+  id: string;
+  user_id: string;
+  full_name?: string;
+  street_address1: string;
+  street_address2?: string;
+  city: string;
+  state: string;
+  zip_code: string;
+  country: string;
+  phone_number?: string;
+  is_default: boolean;
+  type: "Shipping" | "Billing" | "Both";
+  created_at?: string;
+  updated_at?: string;
+}
+
+export type AddressFormData = Omit<Address, "id" | "user_id" | "isDefault" | "created_at" | "updated_at">;
+
 export interface Shop {
   // Represents the single main store
   id: string; // e.g., "main-store-id"
@@ -180,20 +206,6 @@ export interface Order {
   customerNotes?: string;
 }
 
-export interface Address {
-  id?: string;
-  type?: "Shipping" | "Billing";
-  isDefault?: boolean;
-  fullName: string;
-  streetAddress1: string;
-  streetAddress2?: string;
-  city: string;
-  state: string;
-  zipCode: string;
-  country: string;
-  phoneNumber?: string;
-}
-
 export interface PaymentMethod {
   id: string;
   type: "CreditCard" | "PayPal" | "Other";
@@ -235,6 +247,21 @@ export interface PersonalInfoSectionProps {
 
 export interface CollectionSectionProps {
   onNavigate: (page: string, params?: NavigateParams) => void;
+  onAddToCart: (prodId: string, quantity: number, price: number, name?: string, imageUrl?: string, size?: string, color?: string) => void;
+}
+
+export interface LandingPageProps {
+  onNavigate: (page: string, params?: NavigateParams) => void;
+  posts: BlogPost[];
+  onAddToCart: (
+    prodId: string,
+    quantity: number,
+    price: number,
+    name?: string,
+    imageUrl?: string,
+    size?: string,
+    color?: string
+  ) => void;
 }
 
 export type AccountTabId =
@@ -247,6 +274,7 @@ export type AccountTabId =
 export interface AccountPageProps {
   initialTab?: AccountTabId;
   onNavigate: (page: string, params?: NavigateParams) => void;
+  onAddToCart: (prodId: string, quantity: number, price: number, name?: string, imageUrl?: string, size?: string, color?: string) => void;
 }
 
 export interface NavbarProps {

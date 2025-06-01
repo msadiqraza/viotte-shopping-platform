@@ -228,14 +228,13 @@ export const deleteUserAddress = async (addressId: string): Promise<void> => {
 
 export const setDefaultAddress = async (
   addressId: string,
-  type: "Shipping" | "Billing"
 ): Promise<void> => {
   const userId = await getCurrentUserId();
   // Use an RPC function for transactions in Supabase for atomicity
   const { error } = await supabase.rpc("set_default_address", {
     p_user_id: userId,
     p_address_id: addressId,
-    p_address_type: type,
+    p_address_type: "Both",
   });
   if (error) throw error;
 };

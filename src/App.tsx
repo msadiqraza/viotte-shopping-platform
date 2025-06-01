@@ -22,10 +22,11 @@ import { JoinSellerPage } from "./pages/JoinSellerPage";
 import { AdminPage } from "./pages/AdminPage";
 
 // Contexts
-import { AuthProvider } from "./contexts/AuthContext"; // Assuming path
+import { AuthProvider, useAuth } from "./contexts/AuthContext"; // Assuming path
 import { LoginPromptProvider, useLoginPrompt } from "./contexts/LoginPromptContext"; // Assuming path
 import { useLocation } from "react-router-dom";
 import { NavigateParams } from "./types";
+import { addSupabaseItemToCart } from "./services/cartCheckoutApis";
 
 // Helper component to render the login modal
 const LoginPromptModal = () => {
@@ -38,12 +39,10 @@ const LoginPromptModal = () => {
   const returnUrlFromState = (location.state as { returnUrl?: string })?.returnUrl;
 
   if (!isLoginPromptVisible && !returnUrlFromState) {
-    // Also check if we are on /login route due to prompt
     return null;
   }
 
   const handleLoginSuccess = () => {
-    // user: any;
     hideLoginPrompt();
     const redirectPath = returnUrlFromState || "/account"; // Use state or default
     navigate(redirectPath, { replace: true, state: {} }); // Clear state after redirect
@@ -59,16 +58,21 @@ const LoginPromptModal = () => {
       </div>
     );
   }
-  return null; // If not visible and not on /login due to prompt
+  return null;
 };
 
 function AppContent() {
   const navigate = useNavigate();
   const location = useLocation();
+  const auth = useAuth();
+  const { showLoginPrompt } = useLoginPrompt();
 
   const handleNavigate = (path: string, params?: NavigateParams) => {
     if (params?.returnUrl) {
       navigate(path, { state: { returnUrl: params.returnUrl } });
+    } else if (params) {
+      console.log("Navigating to ", path, " with params ", params);
+      navigate(path, { state: { ...params } });
     } else {
       navigate(path);
     }
@@ -110,13 +114,45 @@ function AppContent() {
     },
   ];
 
+  const handleAddToCart = async (
+    prodId: string,
+    quantity: number,
+    price: number,
+    name?: string,
+    imageUrl?: string,
+    size?: string,
+    color?: string
+  ) => {
+    if (!auth.user) {
+      showLoginPrompt({ returnUrl: `/product/${prodId}` });
+      return false;
+    }
+    try {
+      // Assuming addSupabaseItemToCart exists and is properly defined
+      await addSupabaseItemToCart({
+        productId: prodId,
+        quantity,
+        price,
+        name,
+        imageUrl,
+        size,
+        color,
+      });
+      return true;
+    } catch (error) {
+      console.error("Failed to add to cart:", error);
+      alert("Could not add item to cart. Please try again.");
+      return false;
+    }
+  };
+
   return (
     <div className="flex flex-col min-h-screen font-sans">
       <Navbar onNavigate={handleNavigate} />
       <div className="flex-grow">
         <Routes>
-          <Route path="/" element={<LandingPage onNavigate={handleNavigate} />} />
-          <Route path="/account" element={<AccountPage onNavigate={handleNavigate} />} />
+          <Route path="/" element={<LandingPage onNavigate={handleNavigate} onAddToCart={handleAddToCart} posts={blogPosts}/>} />
+          <Route path="/account" element={<AccountPage onNavigate={handleNavigate} onAddToCart={handleAddToCart}/>} />
 
           <Route
             path="/login"
@@ -134,10 +170,10 @@ function AppContent() {
           />
           <Route path="/cart" element={<CartPage onNavigate={handleNavigate} />} />
 
-          <Route path="/products" element={<ProductListingsPage onNavigate={handleNavigate} />} />
-          <Route path="/product/:id" element={<ProductDetailPage onNavigate={handleNavigate} />} />
+          <Route path="/products" element={<ProductListingsPage onNavigate={handleNavigate} onAddToCart={handleAddToCart}/>} />
+          <Route path="/product/:id" element={<ProductDetailPage onNavigate={handleNavigate} onAddToCart={handleAddToCart} />} />
 
-          <Route path="/shop" element={<ShopPage onNavigate={handleNavigate} />} />
+          <Route path="/shop" element={<ShopPage onNavigate={handleNavigate} onAddToCart={handleAddToCart}/>} />
           {/* <Route path="/shop/about" element={<ShopPage onNavigate={handleNavigate} />} />
           <Route path="/shop/policies" element={<ShopPage onNavigate={handleNavigate} />} /> */}
 

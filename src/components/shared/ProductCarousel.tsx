@@ -11,8 +11,17 @@ interface ProductCarouselProps {
   products: ProductTypeCarousel[];
   itemsToShow?: number;
   onNavigate: (page: string, params?: NavigateParams) => void;
+  onAddToCart: (
+    productId: string,
+    quantity: number,
+    price: number,
+    name?: string,
+    imageUrl?: string,
+    size?: string,
+    color?: string
+  ) => void;
 }
-export const ProductCarousel: React.FC<ProductCarouselProps> = ({ title, products, itemsToShow = 5, onNavigate }) => {
+export const ProductCarousel: React.FC<ProductCarouselProps> = ({ title, products, itemsToShow = 5, onNavigate, onAddToCart }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const carouselRef = useRef<HTMLDivElement>(null);
   const totalItems = products.length;
@@ -100,7 +109,7 @@ export const ProductCarousel: React.FC<ProductCarouselProps> = ({ title, product
         <div ref={carouselRef} className="flex transition-transform duration-500 ease-in-out" style={{ width: `${(totalItems / currentItemsToShow) * 100}%` }}>
           {products.map((product) => (
             <div key={product.id} className="px-1.5 sm:px-2 flex-shrink-0 min-w-[300px]" style={{ width: `${itemWidthPercentage}%` }}>
-              <ProductCard product={product} onNavigate={onNavigate} />
+              <ProductCard product={product} onNavigate={onNavigate} onAddToCart={onAddToCart} />
             </div>
           ))}
         </div>

@@ -7,7 +7,7 @@ import { Pagination } from "../../components/shared/Pagination";
 import { FilterControls } from "../../components/shared/FilterControls";
 import { ProductCard } from "../../components/shared/ProductCard";
 
-export const CollectionSection: React.FC<CollectionSectionProps> = ({ onNavigate }) => {
+export const CollectionSection: React.FC<CollectionSectionProps> = ({ onNavigate, onAddToCart }) => {
   const [collectionItems, setCollectionItems] = useState<CollectionItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -84,7 +84,7 @@ export const CollectionSection: React.FC<CollectionSectionProps> = ({ onNavigate
         <>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 sm:gap-6">
             {collectionItems.map((item) => (
-              <ProductCard key={item.id} product={item} onNavigate={onNavigate} />
+              <ProductCard key={item.id} product={item} onNavigate={onNavigate} onAddToCart={onAddToCart} />
             ))}
           </div>
           {totalPages > 1 && <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={handlePageChange} />}

@@ -16,6 +16,7 @@ import { useLoginPrompt } from "../contexts/LoginPromptContext";
 export const AccountPage: React.FC<AccountPageProps> = ({
   initialTab = "personal-info",
   onNavigate,
+  onAddToCart,
 }) => {
   const [activeTab, setActiveTab] = useState<AccountTabId>(initialTab);
   const [userDetails, setUserDetails] = useState<UserAccountDetails | null>(null);
@@ -123,7 +124,7 @@ export const AccountPage: React.FC<AccountPageProps> = ({
           />
         );
       case "collection":
-        return <CollectionSection onNavigate={onNavigate} />;
+        return <CollectionSection onNavigate={onNavigate} onAddToCart={onAddToCart} />;
       case "orders":
         return <OrdersSection />;
       case "addresses":

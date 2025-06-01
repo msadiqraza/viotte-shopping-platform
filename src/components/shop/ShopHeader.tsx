@@ -4,6 +4,7 @@ import { Shop } from "../../types"; // Adjust path
 import { Star, Users, MessageCircle, Heart as HeartShopIcon } from "lucide-react";
 import { followMainStore } from "../../services/shopApis"; // Adjust path
 import { NavigateParams } from "../../types";
+import { useAuth } from "../../contexts/AuthContext";
 
 interface ShopHeaderProps {
   shop: Shop;
@@ -12,8 +13,14 @@ interface ShopHeaderProps {
 export const ShopHeader: React.FC<ShopHeaderProps> = ({ shop, onNavigate }) => {
   const [isFollowed, setIsFollowed] = useState(false);
   const [currentFollowers, setCurrentFollowers] = useState(shop.followersCount || 0);
+    const { user } = useAuth();
+
   const handleFollowStore = async () => {
     try {
+      if (!user) {
+        onNavigate("login");
+        return;
+      }
       const response = await followMainStore();
       if (response.success) {
         setIsFollowed(true);
@@ -73,7 +80,7 @@ export const ShopHeader: React.FC<ShopHeaderProps> = ({ shop, onNavigate }) => {
               {isFollowed ? "Following" : "Follow Us"}
             </button>
             <button
-              onClick={() => onNavigate("contact")}
+              onClick={() => onNavigate("about")}
               className="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-md text-sm font-medium transition-colors flex items-center whitespace-nowrap"
             >
               <MessageCircle size={16} className="mr-1.5" /> Contact Us

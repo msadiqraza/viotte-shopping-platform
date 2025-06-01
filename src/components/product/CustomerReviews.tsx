@@ -14,7 +14,7 @@ const ReviewItem: React.FC<{ review: Review }> = ({ review }) => (
       {review.reviewerAvatar ? (
         <img src={review.reviewerAvatar} alt={review.reviewerName} className="w-8 h-8 rounded-full mr-2 object-cover" />
       ) : (
-        <div className="w-8 h-8 rounded-full bg-slate-300 mr-2 flex items-center justify-center text-slate-600 text-sm">{review.reviewerName.charAt(0)}</div>
+        <div className="w-8 h-8 rounded-full bg-slate-300 mr-2 flex items-center justify-center text-slate-600 text-sm">{review.reviewerName?.charAt(0)}</div>
       )}
       <span className="font-semibold text-sm text-slate-700">{review.reviewerName}</span>
       {review.verifiedPurchase && <span className="ml-2 text-xs bg-green-100 text-green-700 px-1.5 py-0.5 rounded-full">Verified Purchase</span>}

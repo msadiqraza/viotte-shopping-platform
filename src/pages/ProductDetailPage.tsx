@@ -14,13 +14,12 @@ import { ProductCarousel as SimilarProductCarousel } from "../components/shared/
 import { CollectionSectionProps as ProductDetailPageProps } from "../types";
 import { useAuth } from "../contexts/AuthContext";
 import { useLoginPrompt } from "../contexts/LoginPromptContext";
-import { addSupabaseItemToCart } from "../services/cartCheckoutApis"; // Assuming you have this
 import {
   addToCollection as addToWishlistService,
   // removeFromCollection as removeFromWishlistService,
-} from "../services/accountApis"; // Assuming
+} from "../services/accountApis";
 
-export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({ onNavigate }) => {
+export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({ onNavigate, onAddToCart }) => {
   let { id } = useParams();
   const [product, setProduct] = useState<ProductDetailType | null>(null);
   const [reviews, setReviews] = useState<ReviewType[]>([]);
@@ -67,67 +66,35 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({ onNavigate
     }
   }, [id]);
 
-  const handleAddToCart = async (
-    prodId: string,
-    quantity: number,
-    price: number,
-    name?: string,
-    imageUrl?: string,
-    size?: string,
-    color?: string
-  ) => {
-    if (!auth.user) {
-      showLoginPrompt({ returnUrl: `/product/${prodId}` });
-      return;
-    }
-    try {
-      // Assuming addSupabaseItemToCart exists and is properly defined
-      await addSupabaseItemToCart({
-        productId: prodId,
-        quantity,
-        price,
-        name,
-        imageUrl,
-        size,
-        color,
-      });
-      alert(`${product?.name} (Qty: ${quantity}) added to cart!`);
-      // Optionally navigate to cart or show a success toast
-      onNavigate("cart");
-    } catch (error) {
-      console.error("Failed to add to cart:", error);
-      alert("Could not add item to cart. Please try again.");
-    }
-  };
+  // const handleBuyNow = (prodId: string, quantity: number) => {
+  //   // TODO: Implement buy now functionality 
+  //   if (!auth.user) {
+  //     showLoginPrompt({ returnUrl: `/product/${prodId}` }); // Could pass query params for checkout intent
+  //     return;
+  //   }
+  //   // Add to cart first, then navigate to checkout
+  //   // This logic might need to be more robust (e.g. ensure item is in cart before navigating)
+  //   console.log(`Buy now: ${prodId}, Qty: ${quantity}`); //
+  //   // await handleAddToCart(prodId, quantity, product.price, product.name, product.imageUrl, selectedSize, selectedColor); // Example
+  //   onNavigate("checkout", { productId: prodId, quantity }); //
+  // };
 
-  const handleBuyNow = (prodId: string, quantity: number) => {
-    //
-    if (!auth.user) {
-      showLoginPrompt({ returnUrl: `/product/${prodId}` }); // Could pass query params for checkout intent
-      return;
-    }
-    // Add to cart first, then navigate to checkout
-    // This logic might need to be more robust (e.g. ensure item is in cart before navigating)
-    console.log(`Buy now: ${prodId}, Qty: ${quantity}`); //
-    // await handleAddToCart(prodId, quantity, product.price, product.name, product.imageUrl, selectedSize, selectedColor); // Example
-    onNavigate("checkout", { productId: prodId, quantity }); //
-  };
+const handleWishlist = async (prodId: string): Promise<boolean> => {
+  if (!auth.user) {
+    showLoginPrompt({ returnUrl: `/product/${prodId}` });
+    return false;
+  }
+  try {
+    await addToWishlistService(prodId);
+    return true;
+  } catch (error) {
+    console.error("Failed to add to wishlist:", error);
+    alert("Could not add item to wishlist. Please try again.");
+    return false;
+  }
+};
 
-  const handleWishlist = async (prodId: string) => {
-    //
-    if (!auth.user) {
-      showLoginPrompt({ returnUrl: `/product/${prodId}` });
-      return;
-    }
-    try {
-      // You'd typically check if it's already in wishlist to toggle
-      await addToWishlistService(prodId);
-      alert(`${product?.name} added to wishlist!`);
-    } catch (error) {
-      console.error("Failed to add to wishlist:", error);
-      alert("Could not add item to wishlist. Please try again.");
-    }
-  };
+console.log("product", product);
 
   if (isLoading)
     return (
@@ -168,8 +135,8 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({ onNavigate
           <div>
             <ProductInfo
               product={product}
-              onAddToCart={handleAddToCart}
-              onBuyNow={handleBuyNow}
+              onAddToCart={onAddToCart}
+              // onBuyNow={handleBuyNow}
               onWishlist={handleWishlist}
               onNavigate={onNavigate}
             />
@@ -202,6 +169,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({ onNavigate
               title="Similar Products"
               products={similarProducts}
               onNavigate={onNavigate}
+              onAddToCart={onAddToCart}
             />
           </section>
         )}

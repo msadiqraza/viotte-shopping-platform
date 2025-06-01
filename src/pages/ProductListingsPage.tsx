@@ -7,16 +7,27 @@ import { ProductCard } from "../components/shared/ProductCard";
 import { FilterControls } from "../components/shared/FilterControls";
 import { Pagination as PaginationPLP } from "../components/shared/Pagination";
 import { NavigateParams } from "../types";
+import { useLocation } from "react-router-dom";
 
 interface ProductListingsPageProps {
-  initialCategorySlug?: string;
-  initialSearchTerm?: string;
   onNavigate: (page: string, params?: NavigateParams) => void;
+  onAddToCart: (
+    productId: string,
+    quantity: number,
+    price: number,
+    name?: string,
+    imageUrl?: string,
+    size?: string,
+    color?: string
+  ) => void;
 }
 
 const ITEMS_PER_PAGE_PLP = 15;
 
-export const ProductListingsPage: React.FC<ProductListingsPageProps> = ({ initialCategorySlug, initialSearchTerm, onNavigate }) => {
+export const ProductListingsPage: React.FC<ProductListingsPageProps> = ({ onNavigate, onAddToCart }) => {
+  const location = useLocation();
+  const { initialSearchTerm, categorySlug } = location.state || {};
+  
   const [products, setProducts] = useState<ProductListingType[]>([]);
   const [allCategories, setAllCategories] = useState<CategoryTypePLP[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -25,7 +36,7 @@ export const ProductListingsPage: React.FC<ProductListingsPageProps> = ({ initia
   const [totalPages, setTotalPages] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
   const [currentSort, setCurrentSort] = useState("relevance");
-  const [selectedCategory, setSelectedCategory] = useState<string | undefined>(initialCategorySlug);
+  const [selectedCategory, setSelectedCategory] = useState<string | undefined>(categorySlug);
   const [searchTerm, setSearchTerm] = useState<string | undefined>(initialSearchTerm);
   const [pageTitle, setPageTitle] = useState("All Products");
 
@@ -38,10 +49,10 @@ export const ProductListingsPage: React.FC<ProductListingsPageProps> = ({ initia
   ];
 
   useEffect(() => {
-    setSelectedCategory(initialCategorySlug);
+    setSelectedCategory(categorySlug);
     setSearchTerm(initialSearchTerm);
     setCurrentPage(1);
-  }, [initialCategorySlug, initialSearchTerm]);
+  }, [categorySlug, initialSearchTerm]);
 
   useEffect(() => {
     getCategoriesPLP()
@@ -57,7 +68,7 @@ export const ProductListingsPage: React.FC<ProductListingsPageProps> = ({ initia
         const params = {
           category: selectedCategory,
           search: searchTerm,
-          // sort: currentSort,
+          sort: currentSort,
           page: currentPage,
           limit: ITEMS_PER_PAGE_PLP,
         };
@@ -137,7 +148,7 @@ export const ProductListingsPage: React.FC<ProductListingsPageProps> = ({ initia
         {products.length > 0 && (
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 sm:gap-6">
             {products.map((product) => (
-              <ProductCard key={product.id} product={product} onNavigate={onNavigate} />
+              <ProductCard key={product.id} product={product} onNavigate={onNavigate} onAddToCart={onAddToCart} />
             ))}
           </div>
         )}

@@ -16,17 +16,21 @@ export const isCurrentUserAdmin = async (): Promise<boolean> => {
     } = await supabase.auth.getUser();
     if (!user) return false;
 
-    const adminEmail = import.meta.env.VITE_ADMIN_EMAIL;
-    if (!adminEmail) {
+    const adminEmailsEnv: string = import.meta.env.VITE_ADMIN_EMAIL;
+    if (!adminEmailsEnv) {
       console.warn("VITE_ADMIN_EMAIL environment variable is not set.");
       return false;
     }
-    return user.email === adminEmail;
+
+    // Split the environment variable by commas, trim spaces, and check if the user's email is in the list
+    const adminEmails = adminEmailsEnv.split(",").map((email) => email.trim().toLowerCase());
+    return adminEmails.includes(user.email?.toLowerCase() || "");
   } catch (error) {
     console.error("Error checking admin status:", error);
     return false;
   }
 };
+
 
 /**
  * Fetches all seller applications, typically those pending review.

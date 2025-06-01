@@ -81,7 +81,7 @@ export const addSupabaseItemToCart = async (item: { productId: string; quantity:
     if (item.size) query = query.eq('size', item.size); else query = query.is('size', null);
     if (item.color) query = query.eq('color', item.color); else query = query.is('color', null);
     
-    const { data: existingItem, error: fetchExistingError } = await query.single();
+    const { data: existingItem, error: fetchExistingError } = await query.maybeSingle();
 
     if (fetchExistingError && fetchExistingError.code !== 'PGRST116') throw fetchExistingError;
 
@@ -95,6 +95,7 @@ export const addSupabaseItemToCart = async (item: { productId: string; quantity:
         const { error: insertError } = await supabase
             .from('user_cart_items')
             .insert({
+                cart_id: cartId,
                 product_id: item.productId,
                 quantity: item.quantity,
                 price_at_add: item.price, // Price when added
@@ -103,7 +104,7 @@ export const addSupabaseItemToCart = async (item: { productId: string; quantity:
             });
         if (insertError) throw insertError;
     }
-    await supabase.from('user_carts').update({ updated_at: new Date().toISOString() }).eq('id', cartId);
+    await supabase.from('user_carts').update({ updated_at: new Date().toISOString() }).eq('id', cartId).eq('user_id', userId);
     return fetchAndCalculateCart(cartId);
 };
 

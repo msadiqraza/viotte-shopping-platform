@@ -2,6 +2,19 @@
 import { Shop } from "../types";
 import { supabase } from "../supabaseClient"; // Adjust path to your Supabase client initialization
 
+const toCamel = (str: string) => str.replace(/_([a-z])/g, (match) => match[1].toUpperCase());
+
+const snakeToCamelObject = (obj: any): any => {
+  if (Array.isArray(obj)) {
+    return obj.map(snakeToCamelObject);
+  } else if (obj !== null && typeof obj === "object") {
+    return Object.fromEntries(
+      Object.entries(obj).map(([key, value]) => [toCamel(key), snakeToCamelObject(value)])
+    );
+  }
+  return obj;
+};
+
 // --- Shop Endpoint (for the single main shop) ---
 export const getMainShopDetails = async (): Promise<Shop | null> => {
   const MAIN_SHOP_ID_OR_SLUG = import.meta.env.VITE_PUBLIC_SHOP_ID;
@@ -20,9 +33,10 @@ export const getMainShopDetails = async (): Promise<Shop | null> => {
     throw error;
   }
 
-  console.log("Main shop details fetched.", data); // data will be a single object or null
+  const refinedData = snakeToCamelObject(data);
+  console.log("Main shop details fetched.", refinedData); // data will be a single object or null
 
-  return data as Shop | null;
+  return refinedData as Shop | null;
 };
 
 export const followMainStore = async (): Promise<{ success: boolean; followersCount?: number }> => {

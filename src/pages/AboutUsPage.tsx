@@ -12,43 +12,15 @@ import {
   CheckCircle,
 } from "lucide-react";
 import { NavigateParams } from "../types";
-// Assume a mock service function for contact form submission
-// import { sendContactMessage } from '../services/api'; // You would create this in project_services_v1
-// Assume ContactFormData type
-// import { ContactFormData } from '../types'; // You would add this to project_types_v1
-
-// Placeholder for ContactFormData type (add to src/types/index.ts)
-interface ContactFormData {
-  name: string;
-  email: string;
-  subject: string;
-  message: string;
-}
-
-// Placeholder for sendContactMessage (add to src/services/api.ts)
-const sendContactMessage = async (
-  formData: ContactFormData
-): Promise<{ success: boolean; message: string }> => {
-  console.log("Contact form submitted (mock):", formData);
-  // Simulate API call
-  return new Promise((resolve) =>
-    setTimeout(() => {
-      if (formData.email.includes("@")) {
-        // Simple validation
-        resolve({
-          success: true,
-          message: "Thank you for your message! We'll get back to you soon.",
-        });
-      } else {
-        resolve({ success: false, message: "Failed to send message. Please try again." });
-      }
-    }, 1000)
-  );
-};
+import { sendContactForm } from '../services/contactApis';
+import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
+import { LatLngExpression } from "leaflet";
+import { ContactFormData } from "../types";
 
 export const AboutUsPage: React.FC<{ onNavigate: (page: string, params?: NavigateParams) => void }> = ({
   onNavigate,
 }) => {
+  const position: LatLngExpression = [33.6844, 73.0479]; 
   const [formData, setFormData] = useState<ContactFormData>({
     name: "",
     email: "",
@@ -73,12 +45,12 @@ export const AboutUsPage: React.FC<{ onNavigate: (page: string, params?: Navigat
     setIsSubmitting(true);
     setFormStatus({ type: "idle", message: "" });
     try {
-      const response = await sendContactMessage(formData);
-      if (response.success) {
-        setFormStatus({ type: "success", message: response.message });
+      const response = await sendContactForm(formData);
+      if (response) {
+        setFormStatus({ type: "success", message: "Message sent successfully!" });
         setFormData({ name: "", email: "", subject: "", message: "" }); // Reset form
       } else {
-        setFormStatus({ type: "error", message: response.message });
+        setFormStatus({ type: "error", message: "Failed to send message. Please try again." });
       }
     } catch (error: any) {
       setFormStatus({ type: "error", message: error.message || "An unexpected error occurred." });
@@ -290,8 +262,7 @@ export const AboutUsPage: React.FC<{ onNavigate: (page: string, params?: Navigat
                     <MapPin size={24} className="flex-shrink-0 mr-3 mt-1 text-green-600" />
                     <div>
                       <h4 className="font-medium">Our Office</h4>
-                      <p className="text-sm">123 viotte Street, Wah, Punjab, Pakistan</p>
-                      <p className="text-sm">(This is a placeholder address)</p>
+                      <p className="text-sm">123 viotte Street</p>
                     </div>
                   </div>
                   <div className="flex items-start">
@@ -314,10 +285,21 @@ export const AboutUsPage: React.FC<{ onNavigate: (page: string, params?: Navigat
                   </div>
                 </div>
               </div>
-              {/* Placeholder for Map */}
-              <div className="bg-slate-200 h-64 rounded-xl shadow-md flex items-center justify-center text-slate-500">
-                <MapPin size={40} className="opacity-50" />
-                <span className="ml-2">Map Placeholder</span>
+              <div className="h-64 rounded-xl shadow-md overflow-hidden">
+                <MapContainer
+                  center={position}
+                  zoom={13}
+                  scrollWheelZoom={false}
+                  className="w-full h-full"
+                >
+                  <TileLayer
+                    attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a>'
+                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                  />
+                  <Marker position={position}>
+                    <Popup>Your store is here!</Popup>
+                  </Marker>
+                </MapContainer>
               </div>
             </div>
           </div>

@@ -8,8 +8,20 @@ import { NavigateParams } from "../../types";
 const MAX_RECENTLY_VIEWED_DISPLAY_LANDING = 5;
 interface RecentlyViewedSectionProps {
   onNavigate: (page: string, params?: NavigateParams) => void;
+  onAddToCart: (
+    productId: string,
+    quantity: number,
+    price: number,
+    name?: string,
+    imageUrl?: string,
+    size?: string,
+    color?: string
+  ) => void;
 }
-export const RecentlyViewedSection: React.FC<RecentlyViewedSectionProps> = ({ onNavigate }) => {
+export const RecentlyViewedSection: React.FC<RecentlyViewedSectionProps> = ({
+  onNavigate,
+  onAddToCart,
+}) => {
   const [recentlyViewedProducts, setRecentlyViewedProducts] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   useEffect(() => {
@@ -43,6 +55,12 @@ export const RecentlyViewedSection: React.FC<RecentlyViewedSectionProps> = ({ on
     );
   if (recentlyViewedProducts.length === 0) return null;
   return (
-    <ProductCarousel title="Recently Viewed" products={recentlyViewedProducts} itemsToShow={MAX_RECENTLY_VIEWED_DISPLAY_LANDING} onNavigate={onNavigate} />
+    <ProductCarousel
+      title="Recently Viewed"
+      products={recentlyViewedProducts}
+      itemsToShow={MAX_RECENTLY_VIEWED_DISPLAY_LANDING}
+      onNavigate={onNavigate}
+      onAddToCart={onAddToCart}
+    />
   );
 };

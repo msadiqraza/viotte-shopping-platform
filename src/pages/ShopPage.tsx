@@ -15,10 +15,19 @@ import { NavigateParams } from "../types";
 const MAIN_SHOP_PRODUCTS_PER_PAGE = 15;
 interface ShopPageProps {
   onNavigate: (page: string, params?: NavigateParams) => void;
+  onAddToCart: (
+    productId: string,
+    quantity: number,
+    price: number,
+    name?: string,
+    imageUrl?: string,
+    size?: string,
+    color?: string
+  ) => void;
 }
 type MainShopActiveTab = "products" | "about" | "policies";
 
-export const ShopPage: React.FC<ShopPageProps> = ({ onNavigate }) => {
+export const ShopPage: React.FC<ShopPageProps> = ({ onNavigate, onAddToCart }) => {
   const [mainShop, setMainShop] = useState<Shop | null>(null);
   const [shopProducts, setShopProducts] = useState<ShopProductType[]>([]);
   const [isLoadingShop, setIsLoadingShop] = useState(true);
@@ -35,6 +44,7 @@ export const ShopPage: React.FC<ShopPageProps> = ({ onNavigate }) => {
     returns: "",
     payment: "",
   });
+
   const productSortOptions = [
     { value: "relevance", label: "Relevance" },
     { value: "price-asc", label: "Price: Low to High" },
@@ -75,7 +85,7 @@ export const ShopPage: React.FC<ShopPageProps> = ({ onNavigate }) => {
         try {
           const params = {
             shopId: mainShop.id,
-            // sort: currentProductSort,
+            sort: currentProductSort,
             page: currentProductPage,
             limit: MAIN_SHOP_PRODUCTS_PER_PAGE,
             search: shopProductSearchTerm,
@@ -120,7 +130,7 @@ export const ShopPage: React.FC<ShopPageProps> = ({ onNavigate }) => {
       <div className="min-h-screen flex flex-col items-center justify-center bg-stone-50 p-4 text-center">
         <h2 className="text-2xl font-semibold text-red-600 mb-4">Error Loading Store</h2>
         <p className="text-slate-600 mb-4">{error}</p>
-        <button onClick={() => onNavigate("landing")} className="bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700">
+        <button onClick={() => onNavigate("")} className="bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700">
           Go to Homepage
         </button>
       </div>
@@ -152,7 +162,7 @@ export const ShopPage: React.FC<ShopPageProps> = ({ onNavigate }) => {
                 <>
                   <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 sm:gap-6">
                     {shopProducts.map((product) => (
-                      <ShopProductCard key={product.id} product={product} onNavigate={onNavigate} />
+                      <ShopProductCard key={product.id} product={product} onNavigate={onNavigate} onAddToCart={onAddToCart} />
                     ))}
                   </div>
                   {totalProductPages > 1 && (
