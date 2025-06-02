@@ -206,18 +206,6 @@ export interface Order {
   customerNotes?: string;
 }
 
-export interface PaymentMethod {
-  id: string;
-  type: "CreditCard" | "PayPal" | "Other";
-  isDefault?: boolean;
-  last4?: string;
-  expiryMonth?: string;
-  expiryYear?: string;
-  cardBrand?: "Visa" | "Mastercard" | "Amex" | "Discover" | "Other";
-  email?: string;
-  nameOnCard?: string;
-}
-
 export interface GetProductsParams {
   category?: string;
   shopId?: string;
@@ -295,4 +283,36 @@ export interface NavigateParams {
   orderNumber?: string;
   orderId?: string;
   replace?: boolean;
+}
+
+// Payment Types
+export interface PaymentMethod {
+  id: string; // Your internal ID for the saved payment method (from your DB)
+  user_id: string;
+  type: "stripe" | "paypal" | "card";
+  provider_payment_method_id: string; // e.g., Stripe PaymentMethod ID (pm_xxx)
+  brand?: string;
+  last4?: string;
+  is_default: boolean;
+  email?: string; // For PayPal
+  created_at: string;
+}
+
+export interface NewPaymentMethodData {
+  type: "stripe" | "card";
+  stripePaymentMethodId: string; // Stripe's pm_xxx ID
+  isDefault?: boolean; // Optional: whether to set this new card as default
+  cardDetails?: {
+    // Optional: client might have some non-sensitive details
+    brand?: string;
+    last4?: string;
+  };
+}
+
+export interface StripeIntentResponse {
+  // Renamed for clarity, can be Setup or Payment Intent
+  clientSecret: string;
+  customerId?: string; // Stripe Customer ID, useful for some Stripe Elements configurations
+  paymentIntentId?: string; // For PaymentIntents
+  error?: string; // If backend returns an error object
 }

@@ -16,8 +16,6 @@ interface AccountPageLayoutProps {
   activeTab: AccountTabId;
   onTabChange: (tabId: AccountTabId) => void;
   children: React.ReactNode;
-  avatarUrl?: string;
-  userName?: string;
 }
 const accountTabsList: { id: AccountTabId; label: string; icon: React.ElementType }[] = [
   { id: "personal-info", label: "Personal Information", icon: UserCircle },
@@ -26,10 +24,7 @@ const accountTabsList: { id: AccountTabId; label: string; icon: React.ElementTyp
   { id: "addresses", label: "Manage Addresses", icon: MapPin },
   { id: "payment-methods", label: "Payment Methods", icon: CreditCard },
 ];
-export const AccountPageLayout: React.FC<AccountPageLayoutProps> = ({ activeTab, onTabChange, children, avatarUrl, userName }) => {
-  console.log("avatarUrl", avatarUrl);
-  console.log("userName", userName);
-  
+export const AccountPageLayout: React.FC<AccountPageLayoutProps> = ({ activeTab, onTabChange, children }) => {
   return (
     <div className="bg-stone-100 py-8">
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

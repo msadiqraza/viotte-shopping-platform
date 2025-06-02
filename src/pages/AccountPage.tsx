@@ -146,8 +146,6 @@ export const AccountPage: React.FC<AccountPageProps> = ({
     <AccountPageLayout
       activeTab={activeTab}
       onTabChange={setActiveTab}
-      avatarUrl={userDetails?.avatar_url}
-      userName={userDetails?.first_name}
     >
       {renderActiveTabContent()}
     </AccountPageLayout>
